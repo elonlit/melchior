@@ -157,7 +157,10 @@ def train_melchior(state_dict:Union[None, str] = None,
 
     # Load state dict if provided
     if state_dict:
+        print("Loading state dict...")
         model = MelchiorModule.load_from_checkpoint(state_dict)
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        scheduler.load_state_dict(checkpoint['scheduler'])
 
     # Create trainer
     checkpoint_callback = ModelCheckpoint(dirpath=save_path, filename='{epoch}-{val_loss:.2f}', save_top_k=3, monitor='val_loss')

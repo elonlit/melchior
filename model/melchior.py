@@ -871,39 +871,19 @@ class Melchior(nn.Module):
 
         self.norm = nn.LayerNorm(embed_dim)
         self.output_length = output_length
-        #self.old_head = nn.Linear(embed_dim, 5)  # 5 output classes
         self.head = Head(embed_dim, 4096, output_length, num_classes=5)
 
 
     def forward(self, x):
         x = self.patch_embed(x)  # (128, 4096, 512)
-
-        # print("AFTER EMBED:", x.shape)
         x = x + self.pos_embed
         
         for block in self.blocks:
             x = block(x)
-            # print("AFTER BLOCK:", x.shape)
         
         x = self.norm(x)
-        # print("AFTER NORM:", x.shape)
-        #x = self.old_head(x)  # (128, 4096, 5)
-        # print("AFTER HEAD:", x.shape)
-        
-        # x = x.permute(2, 0, 1)  # (5, 4096, 128)
-        # x = x.reshape(-1, x.shape[1], x.shape[2])  # (5*4096, 128)
-        # x = F.log_softmax(x, dim=-1)
-        # x = x.reshape(-1, self.output_length, x.shape[1])  # (420, 2, 5)
-        # x = x.permute(0, 2, 1)  # (420, 5, 2)
-
-        # Reshape to (420, 128, 5) and apply log_softmax
-        #x = x[:, :self.output_length, :].permute(1, 0, 2)
-        # x = x.permute(0, 2, 1)
-        # x = self.head(x)
-        # x = x.view(-1, self.output_length, 5)
         x = self.head(x)
         x = F.log_softmax(x, dim=-1)
-        #print(x.shape)
         
         return x
 
