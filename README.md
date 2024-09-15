@@ -62,25 +62,23 @@ For detailed installation instructions, see our [Installation Guide](docs/instal
 To train the model from scratch, run:
 
 ```bash
-python -m utils.train
-
-Training utility for Melchior
-
-options:
-  -h, --help            show this help message and exit
-  --model {melchior,rodan}
-  --state_dict STATE_DICT
-  --epochs EPOCHS
-  --batch_size BATCH_SIZE
-  --lr LR
-  --weight_decay WEIGHT_DECAY
-  --save_path SAVE_PATH
+python -m utils.train [OPTIONS]
 ```
 
-If you have access to a Slurm cluster, run:
+### Options:
+
+- `--model`: Choose model architecture (`melchior` or `rodan`). Default: `melchior`
+- `--state_dict`: Path to initial state dict. Default: None
+- `--epochs`: Number of training epochs. Default: 10
+- `--batch_size`: Batch size for training. Default: 16
+- `--lr`: Learning rate. Default: 0.001
+- `--weight_decay`: Weight decay for optimizer. Default: 0.1
+- `--save_path`: Path to save model checkpoints. Default: `models/{model}`
+
+### Example:
 
 ```bash
-./train.sh
+python -m utils.train --model melchior --epochs 10
 ```
 
 ## Reproducible Evaluation
@@ -106,7 +104,7 @@ eval/run_tests.sh
 ```
 
 > [!IMPORTANT]  
-> To benchmark against ONT's proprietary basecallers like Dorado, first run ```bash basecallers/download_basecallers.sh``` before proceeding.
+> To benchmark against ONT's proprietary basecallers like Dorado, first run ```basecallers/download_basecallers.sh``` before proceeding.
 
 
 ## Contributing
