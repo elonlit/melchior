@@ -1,0 +1,11 @@
+melchior/
+__pycache__/
+**/__pycache__/
+data/*
+!data/**/*.sh
+lightning_logs/
+models/
+wandb/
+basecallers/*
+!basecallers/*.sh
+eval/*_outputs/
