@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Run this script inside the basecallers/ directory
 
 # Function to display usage information
 usage() {
