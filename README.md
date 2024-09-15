@@ -37,25 +37,6 @@ In preparation to run the evaluation script, download the test fast5 files as we
 source data/test/download_test.sh
 ```
 
-## Usage
-
-```python
-from melchior import RNABaseCaller
-
-base_caller = RNABaseCaller()
-signal_data = load_signal_data("path/to/signal_file")
-sequence = base_caller.call_bases(signal_data)
-print(f"Predicted RNA sequence: {sequence}")
-```
-
-## Installation
-
-```bash
-pip install melchior
-```
-
-For detailed installation instructions, see our [Installation Guide](docs/installation.md).
-
 ## Training
 
 To train the model from scratch, run:
