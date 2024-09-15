@@ -1,8 +1,12 @@
 melchior/
 __pycache__/
 **/__pycache__/
-data/*
+
+data/**
+!data/
+!data/**/
 !data/**/*.sh
+
 lightning_logs/
 models/
 wandb/
