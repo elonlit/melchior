@@ -26,7 +26,7 @@ source clean.sh # Clean the existing environment
 source data/train_val/download_train_val.sh
 ```
 
-This script downloads the training and validation splits into the `data/` directory.
+This script downloads the training and validation splits into the `data/train_val/` directory.
 
 > [!NOTE]
 > `aria2c` is used to improve the download speed, which may not be available on all systems: ```sudo apt-get install aria2```
