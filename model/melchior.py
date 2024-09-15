@@ -854,7 +854,7 @@ class Melchior(nn.Module):
                  layer_scale=1e-5, layer_scale_conv=None, output_length=420):
         super().__init__()
 
-        self.patch_embed = FastEmbed(in_chans=in_chans, in_dim=256, embed_dim=embed_dim)
+        self.stem = FastEmbed(in_chans=in_chans, in_dim=256, embed_dim=embed_dim)
         
         self.pos_embed = nn.Parameter(torch.zeros(1, 4096, embed_dim))
         trunc_normal_(self.pos_embed, std=.02)
@@ -875,7 +875,7 @@ class Melchior(nn.Module):
 
 
     def forward(self, x):
-        x = self.patch_embed(x)  # (128, 4096, 512)
+        x = self.stem(x)  # (128, 4096, 512)
         x = x + self.pos_embed
         
         for block in self.blocks:
