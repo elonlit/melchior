@@ -249,7 +249,7 @@ def get_config(model, config):
 
 
 class RodanModule(pl.LightningModule):
-    def __init__(self, lr=1e-4, weight_decay=1e-5):
+    def __init__(self, lr=1e-3, weight_decay=0.01):
         super().__init__()
         self.model = network()
         self.lr = lr
@@ -270,7 +270,7 @@ class RodanModule(pl.LightningModule):
         event = torch.unsqueeze(event, 1)
         label = label[:, :max(label_len)]
         output = self(event)
-        #loss = ctc_loss(output, label, event_len, label_len, reduction="mean", blank=0, zero_infinity=True)
+
         losses = ctc_label_smoothing_loss(output, label, label_len, self.smoothweights)
         loss = losses["loss"]
 
@@ -290,14 +290,13 @@ class RodanModule(pl.LightningModule):
         wandb.log({"learning_rate_epoch": current_lr})
 
     def validation_step(self, batch, batch_idx):
-        # assert not self.model.training
         self.model.eval()
         with torch.no_grad():
             event, event_len, label, label_len = batch
             event = torch.unsqueeze(event, 1)
             label = label[:, :max(label_len)]
             output = self(event)
-            # loss = ctc_loss(output, label, event_len, label_len, reduction="mean", blank=0, zero_infinity=True)
+
             losses = ctc_label_smoothing_loss(output, label, label_len, self.smoothweights)
             loss = losses["loss"]            
 
@@ -306,304 +305,19 @@ class RodanModule(pl.LightningModule):
             return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer = Ranger(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
-            T_0=10,  # Number of iterations for the first restart
-            T_mult=2,  # A factor increases T_i after a restart
-            eta_min=1e-6,  # Minimum learning rate
-        )
+            patience=1,
+            factor=0.5,
+            verbose=False,
+            threshold=0.1,
+            min_lr=1e-05)
+
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": scheduler,
-                "interval": "epoch",  # or "step" for iteration-based
-                "frequency": 1,
                 "monitor": "val_loss",
             },
         }
-    # def configure_optimizers(self):
-    #     optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-    #     scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-
-    #     )
-    #     # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=1, verbose=True)
-    #     return {
-    #         "optimizer": optimizer,
-    #         "lr_scheduler": {
-    #             "scheduler": scheduler,
-    #             "monitor": "val_loss",
-    #         },
-    #     }
-
-
-
-
-
-
-# def train(config = None, args = None, arch = None):
-#     graph = False
-#     modelfile = args.model
-#     trainloss = []
-#     validloss = []
-#     learningrate = []
-    
-#     torch.backends.cudnn.benchmark = True
-#     #torch.backends.cudnn.deterministic = True
-#     #torch.autograd.set_detect_anomaly(True)
-
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     print("Using device:", device)
-#     print("Using training file:", config.trainfile)
-
-#     model = network(config=config, arch=arch, seqlen=config.seqlen).to(device)
-
-#     print("Model parameters:", sum(p.numel() for p in model.parameters()))
-#     if modelfile != None:
-#         print("Loading pretrained model:", modelfile)
-#         model.load_state_dict(torch.load(modelfile))
-
-#     if args.verbose:
-#         print("Optimizer:", config.optimizer, "lr:", config.lr, "weightdecay", config.weightdecay)
-#         print("Scheduler:", config.scheduler, "patience:", config.scheduler_patience, "factor:", config.scheduler_factor, "threshold", config.scheduler_threshold, "minlr:", config.scheduler_minlr, "reduce:", config.scheduler_reduce)
-
-#     if config.optimizer.lower() == "adamw":
-#         optimizer = torch.optim.AdamW(model.parameters(), lr = config.lr, weight_decay=config.weightdecay)
-#     elif config.optimizer.lower() == "adam":
-#         optimizer = torch.optim.Adam(model.parameters(), lr = config.lr)
-#     elif config.optimizer.lower() == "ranger":
-#         from pytorch_ranger import Ranger
-#         optimizer = Ranger(model.parameters(), lr=config.lr, weight_decay=config.weightdecay)
-
-#     if args.verbose: print(model)
-
-#     model.eval()
-#     with torch.no_grad():
-#         fakedata = torch.rand((1, 1, config.seqlen))
-#         fakeout = model.forward(fakedata.to(device))
-#         elen = fakeout.shape[0]
-
-#     data = dataloader(recfile=config.trainfile, seq_len=config.seqlen, elen=elen)
-#     data_loader = DataLoader(dataset=data, batch_size=config.batchsize, shuffle=True, num_workers=args.workers, pin_memory=True)
-
-#     if config.scheduler == "reducelronplateau":
-#         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=config.scheduler_patience, factor=config.scheduler_factor, verbose=args.verbose, threshold=config.scheduler_threshold, min_lr=config.scheduler_minlr)
-    
-#     count = 0
-#     last = None
-
-#     if config.amp:
-#         print("Using amp")
-#         from apex import amp
-#         model, optimizer = amp.initialize(model, optimizer, opt_level="O1", verbosity=0)
-
-#     if args.statedict:
-#         print("Loading pretrained model:", args.statedict)
-#         checkpoint = torch.load(args.statedict)
-#         model.load_state_dict(checkpoint["state_dict"])
-#         optimizer.load_state_dict(checkpoint["optimizer"])
-#         scheduler.load_state_dict(checkpoint["scheduler"])
-
-#     # from Bonito but weighting for blank changed to 0.1 from 0.4
-#     if args.labelsmoothing:
-#         C = len(config.vocab)
-#         smoothweights = torch.cat([torch.tensor([0.1]), (0.1 / (C - 1)) * torch.ones(C - 1)]).to(device)
-
-#     if not os.path.isdir(args.savedir):
-#         os.mkdir(args.savedir)
-
-#     shutil.rmtree(args.savedir+"/"+config.name, True)
-#     if args.tensorboard:
-#         writer = SummaryWriter(args.savedir+"/"+config.name)
-#         if not graph:
-#             a,b,c,d = next(iter(data_loader))
-#             a = torch.unsqueeze(a, 1)
-#             writer.add_graph(model, a.to(device))
-
-#     #criterion = nn.CTCLoss(reduction="mean", zero_infinity=True) # test
-
-#     for epoch in range(config.epochs):
-#         model.train()
-#         totalloss = 0
-#         loopcount = 0
-#         learningrate.append(optimizer.param_groups[0]['lr'])
-#         if args.verbose: print("Learning rate:", learningrate[-1])
-
-#         for i, (event, event_len, label, label_len) in enumerate(data_loader):
-#             event = torch.unsqueeze(event, 1)
-#             if event.shape[0] < config.batchsize: continue
-
-#             label = label[:, :max(label_len)]
-#             event = event.to(device, non_blocking=True)
-#             label = label.to(device, non_blocking=True)
-#             event_len = event_len.to(device, non_blocking=True)
-#             label_len = label_len.to(device, non_blocking=True)
-
-#             optimizer.zero_grad()
-
-#             out = model.forward(event)
-
-#             if args.labelsmoothing:
-#                 losses = ont.ctc_label_smoothing_loss(out, label, label_len, smoothweights)
-#                 loss = losses["ctc_loss"]
-#             else:
-#                 loss = torch.nn.functional.ctc_loss(out, label, event_len, label_len, reduction="mean", blank=config.vocab.index('<PAD>'), zero_infinity=True)
-#                 #loss = criterion(out, label, event_len, label_len)
-
-#             totalloss+=loss.cpu().detach().numpy()
-#             print("Loss", loss.data, "epoch:", epoch, count, optimizer.param_groups[0]['lr'])
-
-#             if config.amp:
-#                 with amp.scale_loss(loss, optimizer) as scaled_loss:
-#                     scaled_loss.backward()
-#             else:
-#                 if args.labelsmoothing:
-#                     losses["loss"].backward()
-#                 else:
-#                     loss.backward()
-
-#             if config.gradclip:
-#                 grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.gradclip)
-
-#             optimizer.step()
-#             loopcount+=1
-#             count+=1
-#             if loopcount >= config.train_loopcount: break
-
-#         if args.tensorboard: tensorboard_writer_values(writer, model)
-#         if args.verbose: print("Train epoch loss", totalloss/loopcount)
-
-#         vl = validate(model, device, config=config, args=args, epoch=epoch, elen=elen)
-
-#         if config.scheduler == "reducelronplateau":
-#             scheduler.step(vl)
-#         elif config.scheduler == "decay":
-#             if (epoch > 0) and (epoch % config.scheduler_reduce == 0):
-#                 optimizer.param_groups[0]['lr'] *= config.scheduler_factor
-#                 if optimizer.param_groups[0]['lr'] < config.scheduler_minlr:
-#                     optimizer.param_groups[0]['lr'] = config.scheduler_minlr
-
-#         trainloss.append(np.float(totalloss/loopcount))
-#         validloss.append(vl)
-
-#         if args.tensorboard:
-#             tensorboard_writer_value(writer, "training loss", np.float(totalloss/loopcount))
-#             tensorboard_writer_value(writer, "validation loss", vl)
-
-#         f = open(args.savedir+"/"+config.name+"-stats.pickle", "wb")
-#         pickle.dump([trainloss, validloss], f)
-#         pickle.dump(config.orig, f)
-#         pickle.dump(learningrate, f)
-#         f.close()
-
-#         torch.save(get_config(model, config.orig), args.savedir+"/"+config.name+"-epoch"+str(epoch)+".torch")
-#         torch.save(get_checkpoint(epoch, model, optimizer, scheduler), args.savedir+"/"+config.name+"-ext.torch")
-
-#         if args.verbose:
-#             print("Train losses:", trainloss)
-#             print("Valid losses:", validloss) 
-#             print("Learning rate:", learningrate)
-
-#     print("Model", config.name, "done.")
-#     return trainloss, validloss
-
-# def validate(model, device, config = None, args=None, epoch=-1, elen=342):
-#     if config.valid_loopcount < 1: return(np.float(0))
-#     modelfile = None
-#     if args != None: modelfile = args.model
-#     print("Running validation")
-
-#     # NOTE: possibly move these into train
-#     valid_data = dataloader(recfile=config.validfile, seq_len=config.seqlen, elen=elen)
-#     valid_loader = DataLoader(dataset=valid_data, batch_size=config.batchsize, shuffle=False, num_workers=args.workers, pin_memory=True)
-
-#     total = 0
-#     totalloss = 0
-
-#     if model is None and modelfile:
-#         model = network(config=config).to(device)
-#         model.load_state_dict(torch.load(modelfile))
-
-#     model.eval()
-
-#     with torch.no_grad():
-#         for i, values in enumerate(valid_loader):
-#             event = values[0]
-#             event_len = values[1]
-#             label = values[2]
-#             label_len = values[3]
-#             event = torch.unsqueeze(event, 1)
-#             if event.shape[0] < config.batchsize: continue
-
-#             label = label[:, :max(label_len)]
-#             event = event.to(device)
-#             event_len = event_len.to(device)
-#             label = label.to(device)
-#             label_len = label_len.to(device)
-
-#             out = model.forward(event)
-#             loss = torch.nn.functional.ctc_loss(out, label, event_len, label_len, reduction="mean", blank=0, zero_infinity=True)
-#             totalloss += loss.cpu().detach().numpy()
-
-#             print("valid loss", loss)
-#             total+=1
-#             if total >= config.valid_loopcount: break
-
-#         print("Validation loss:", totalloss / total)
-
-#     return np.float(totalloss / total)
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description='Data.')
-#     parser.add_argument("-c", "--config", default=None, type=str)
-#     parser.add_argument("-d", "--statedict", default=None, type=str)
-#     parser.add_argument("-a", "--arch", default=None, type=str, help="Architecture file")
-#     parser.add_argument("-D", "--savedir", default="runs", type=str, help="save directory (default: runs)")
-#     parser.add_argument("-n", "--name", default=None, type=str)
-#     parser.add_argument("-m", "--model", default=None, type=str)
-#     parser.add_argument("-l", "--labelsmoothing", default=False, action="store_true")
-#     parser.add_argument("-t", "--tensorboard", default=False, action="store_true", help="turn tensorboard logging on")
-#     parser.add_argument("-w", "--workers", default=8, type=int, help="num_workers (default: 8)")
-#     parser.add_argument("-v", "--verbose", default=True, action="store_false", help="Turn verbose mode off")
-#     parser.add_argument("--rna", default=False, action="store_true", help="Use default RNA model")
-#     parser.add_argument("--dna", default=False, action="store_true", help="Use default RNA model")
-#     args = parser.parse_args()
-
-#     if args.name == None:
-#         args.name = ""
-#         while args.name == "": args.name = input("Number: ")
-#     defaultconfig["name"] = args.name 
-
-#     if args.config != None:
-#         import yaml, re
-
-#         # https://stackoverflow.com/questions/52412297/how-to-replace-environment-variable-value-in-yaml-file-to-be-parsed-using-python
-#         def path_constructor(loader, node): 
-#             #print(node.value) 
-#             return os.path.expandvars(node.value) 
-
-#         class EnvVarLoader(yaml.SafeLoader):
-#             pass
-
-#         path_matcher = re.compile(r'.*\$\{([^}^{]+)\}.*')
-#         EnvVarLoader.add_implicit_resolver('!path', path_matcher, None)
-#         EnvVarLoader.add_constructor('!path', path_constructor)
-
-#         newconfig = yaml.load(open(args.config), Loader=EnvVarLoader)
-#         defaultconfig.update(newconfig)
-
-#     if args.arch != None:
-#         defaultconfig["arch"] = open(args.arch, "r").read()
-
-#     if args.arch != None:
-#         print("Loading architecture from:", args.arch)
-#         args.arch = eval(open(args.arch, "r").read())
-
-#     if args.rna:
-#         args.arch = rna_default
-
-#     if args.dna:
-#         args.arch = dna_default
-
-#     config = objectview(defaultconfig)
-#     train(config=config, args=args, arch=args.arch)
