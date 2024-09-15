@@ -29,7 +29,7 @@ source data/train_val/download_train_val.sh
 This script downloads the training and validation splits into the `data/` directory.
 
 > [!NOTE]
-> Note that `aria2c` is used to improve the download speed, which may not be available on all systems: ```sudo apt-get install aria2```
+> `aria2c` is used to improve the download speed, which may not be available on all systems: ```sudo apt-get install aria2```
 
 In preparation to run the evaluation script, download the test fast5 files as well:
 
@@ -77,14 +77,14 @@ python -m utils.train [OPTIONS]
 ### Example:
 
 ```bash
-python -m utils.train --model melchior --epochs 10
+python -m utils.train --model melchior --epochs 10 --batch_size 32 --lr 0.002
 ```
 
 ## Reproducible Evaluation
 
-Weights for the 28 million parameter model are available on HuggingFace.
+Weights for the 37.3 million parameter model are available on HuggingFace.
 
-Download the test set fasta and fast5 files in /data/test/:
+Download the test set fasta and fast5 files in ```./data/test/```:
 
 ```bash
 ./download_test.sh
