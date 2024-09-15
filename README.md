@@ -91,7 +91,7 @@ Download the test set fasta and fast5 files in /data/test/:
 ```
 
 > [!NOTE]  
-> Minimap2 may be necessary, which is not available on all systems: ```sudo apt install minimap2```
+> `minimap2` is necessary, which may not available on all systems: ```sudo apt install minimap2```
 
 Then run the evaluation script to basecall the .fast5 files, align the basecalled sequences to the reference transcriptomes, and calculate the accuracy:
 
@@ -100,8 +100,19 @@ eval/run_tests.sh
 ```
 
 > [!IMPORTANT]  
-> To benchmark against ONT's proprietary basecallers like Dorado, first run ```basecallers/download_basecallers.sh``` before proceeding.
-
+> To benchmark against ONT's proprietary basecallers, you need to download them first before proceeding:
+> 
+> For Guppy:
+> ```
+> ./basecallers/download_guppy.sh [-g|-c]
+>   -g: Download GPU version
+>   -c: Download CPU version
+> ```
+> 
+> For Dorado:
+> ```
+> ./basecallers/download_dorado.sh
+> ```
 
 ## Contributing
 
