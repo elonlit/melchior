@@ -114,7 +114,7 @@ eval/run_tests.sh
 > ./basecallers/download_dorado.sh
 > ```
 > 
-> Run these scripts first before proceeding with the evaluation.
+> Run these scripts before proceeding with the evaluation.
 
 ## Contributing
 
