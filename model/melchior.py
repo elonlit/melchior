@@ -943,26 +943,7 @@ class MelchiorModule(pl.LightningModule):
             wandb.log({"val_loss": loss})
             return loss
         
-    # def configure_optimizers(self):
-    #     optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-    #     scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-    #         optimizer,
-    #         T_0=10,  # Number of iterations for the first restart
-    #         T_mult=2,  # A factor increases T_i after a restart
-    #         eta_min=1e-6,  # Minimum learning rate
-    #     )
-    #     return {
-    #         "optimizer": optimizer,
-    #         "lr_scheduler": {
-    #             "scheduler": scheduler,
-    #             "interval": "epoch",  # or "step" for iteration-based
-    #             "frequency": 1,
-    #             "monitor": "val_loss",
-    #         },
-    #     }
-
     def configure_optimizers(self):
-        # optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         optimizer = Ranger(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
@@ -971,21 +952,6 @@ class MelchiorModule(pl.LightningModule):
             verbose=False,
             threshold=0.1,
             min_lr=1e-05)
-        
-        # # Calculate the total number of steps
-        # total_steps = len(self.train_loader) * self.epochs
-        
-        # # Define the OneCycleLR scheduler
-        # scheduler = OneCycleLR(
-        #     optimizer,
-        #     max_lr=self.lr,
-        #     total_steps=total_steps,
-        #     pct_start=0.025,  # 10% of the cycle is for warmup
-        #     anneal_strategy='cos',
-        #     cycle_momentum=False,
-        #     div_factor=25.0,  # initial_lr = max_lr / div_factor
-        #     final_div_factor=1e2,  # min_lr = initial_lr / final_div_factor
-        # )
 
         return {
             "optimizer": optimizer,
@@ -995,78 +961,5 @@ class MelchiorModule(pl.LightningModule):
             },
         }
 
-        # return {
-        #     "optimizer": optimizer,
-        #     "lr_scheduler": {
-        #         "scheduler": scheduler,
-        #         "interval": "step",
-        #         "frequency": 1,
-        #         "monitor": "val_loss",
-        #     },
-        # }
-        # scheduler = self.lr_scheduler_fn(optimizer, self.train_loader, epochs=self.epochs, last_epoch=-1)
-
-        # return {
-        #     "optimizer": optimizer,
-        #     "lr_scheduler": {
-        #         "scheduler": scheduler,
-        #         "interval": "step",
-        #         "frequency": 1,
-        #         "monitor": "val_loss",
-        #     },
-        # }
-
-    # def configure_optimizers(self):
-    #     optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-    #     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=1, verbose=True)
-    #     return {
-    #         "optimizer": optimizer,
-    #         "lr_scheduler": {
-    #             "scheduler": scheduler,
-    #             "monitor": "val_loss",
-    #         },
-    #     }
-    
-
     # TODO: Implement warm restart with cosine annealing (DONE), Implement predict function (DONE, check basecall.py), make stem residual network (DONE), add a little dropout (DONE), use flash attention (DONE), add label smoothing to CTC loss (DONE), add evaluation suite/program
-    # if there is time (DONE), use original block with MLP after mambavision mixer (DONE).
-    
-    # def predict(self, event):
-    #     self.model.eval()
-    #     with torch.no_grad():
-    #         event = torch.unsqueeze(event, 1)
-    #         output = self(event)
-    #         decoded = self.crf.decode(output)
-    #         return decoded
-    
-# if __name__ == "__main__":
-#     # Initialize the model
-#     with torch.no_grad():
-#         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#         print(f"Using device: {device}")
-#         model = Melchior(in_chans=1, embed_dim=512, depth=12).to(device)
-#         # Test with dummy input
-#         dummy_input = torch.randn(128, 1, 4096).to(device)
-#         output = model(dummy_input)
-#         print(output.shape)  # Should be (420, 2, 5)
-#         total_params = sum(p.numel() for p in model.parameters())
-#         # Print the number of parameters in the model
-#         print(f"Total number of parameters: {total_params}")
-
-
-# Initialize the model
-# with torch.no_grad():
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     print(f"Using device: {device}")
-#     model = Melchior(in_chans=1, embed_dim=512, depth=12).to(device)
-
-#     # Test with dummy input
-#     dummy_input = torch.randn(32, 1, 4096).to(device)
-#     output = model(dummy_input)
-#     print(output.shape)  # Should be (420, 128, 5)
-
-
-#     total_params = sum(p.numel() for p in model.parameters())
-
-#     # Print the number of parameters in the model
-#     print(f"Total number of parameters: {total_params}")
+    # (DONE), use original block with MLP after mambavision mixer (DONE).
