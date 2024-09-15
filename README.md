@@ -10,8 +10,8 @@ A hybrid Mamba-Transformer model for RNA base calling
 
 - High-accuracy RNA base calling
 - Efficient state space modeling
-- Scalable to large datasets
-- Easy-to-use interface
+- Open weights, checkpoints, logs
+- 100% reproducible
 
 ## Quick Start
 
@@ -105,7 +105,9 @@ Then run the evaluation script to basecall the .fast5 files, align the basecalle
 eval/run_tests.sh
 ```
 
-Note: the evaluation script must be run from the root directory of the project.
+> [!IMPORTANT]  
+> To benchmark against ONT's proprietary basecallers like Dorado, first run ```bash basecallers/download_basecallers.sh``` before proceeding.
+
 
 ## Contributing
 
