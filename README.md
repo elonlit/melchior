@@ -31,8 +31,7 @@ This script downloads the training and validation splits into the `data/` direct
 > [!NOTE]
 > Note that `aria2c` is used to improve the download speed, which may not be available on all systems:
 > ```bash
-> sudo apt-get install aria2
-> ```
+> sudo apt-get install aria2```
 
 In preparation to run the evaluation script, download the test fast5 files as well:
 
@@ -96,8 +95,7 @@ Download the test set fasta and fast5 files in /data/test/:
 > [!NOTE]  
 > Minimap2 may be necessary, which is not available on all systems:
 > ```bash
-> sudo apt install minimap2
-> ```
+> sudo apt install minimap2```
 
 Then run the evaluation script to basecall the .fast5 files, align the basecalled sequences to the reference transcriptomes, and calculate the accuracy:
 
