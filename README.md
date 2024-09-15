@@ -100,7 +100,7 @@ eval/run_tests.sh
 ```
 
 > [!IMPORTANT]  
-> To benchmark against ONT's proprietary basecallers, you need to download them first before proceeding:
+> To benchmark against ONT's proprietary basecallers, you need to download them first:
 > 
 > For Guppy:
 > ```
@@ -113,6 +113,8 @@ eval/run_tests.sh
 > ```
 > ./basecallers/download_dorado.sh
 > ```
+> 
+> Run these scripts first before proceeding with the evaluation.
 
 ## Contributing
 
