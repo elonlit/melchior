@@ -24,7 +24,6 @@ To get started, make sure you have the necessary prerequisites. Follow these ste
 
 We welcome all contributions, big or small. Here are some areas where you can potentially contribute:
 
-- Replacing the S4 module with S6 in the MambaVision Mixer block
 - Add ability to basecall from SLOW5 and POD5 formatted files
 - Extending Melchior to DNA base calling
 - Extending Melchior to 5mC and 5hmC methylation calling
