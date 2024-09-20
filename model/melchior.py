@@ -951,7 +951,8 @@ class MelchiorModule(pl.LightningModule):
             factor=0.5,
             verbose=False,
             threshold=0.1,
-            min_lr=1e-05)
+            min_lr=1e-05
+        )
 
         return {
             "optimizer": optimizer,
