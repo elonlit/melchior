@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
-# This script runs a sanity check of the basecalling processs
-# using a subset of the human transcriptome and the Melchior model
+# This script runs a sanity check of the basecalling process
+# using a subset of the human transcriptome and the specified model
+
+# Check if an argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 {rodan, melchior, gcrtcall}"
+    exit 1
+fi
+
+# Validate the argument
+case $1 in
+    rodan|melchior|gcrtcall)
+        model=$1
+        ;;
+    *)
+        echo "Usage: $0 {rodan, melchior, gcrtcall}"
+        exit 1
+        ;;
+esac
 
 # Run the basecalling process a subset of the human transcriptome
 if [ ! -f README.md ]; then
@@ -8,9 +25,9 @@ if [ ! -f README.md ]; then
     exit 1
 fi
 
-echo "Basecalling sanity check dataset..."
+echo "Basecalling sanity check dataset using $model model..."
 mkdir -p eval/sanity_check_outputs
-python -m eval.basecall data/sanity_check/test-data -m melchior -o eval/sanity_check_outputs/times.txt > eval/sanity_check_outputs/output.fasta
+python -m eval.basecall data/sanity_check/test-data -m $model -o eval/sanity_check_outputs/times.txt > eval/sanity_check_outputs/output.fasta
 
 echo "Basecalling process completed."
 
