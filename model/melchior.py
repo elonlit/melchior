@@ -23,6 +23,42 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.nn.functional import ctc_loss
 from utils.loss import ctc_label_smoothing_loss
 from pytorch_ranger import Ranger
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
+from transformers import get_cosine_schedule_with_warmup
+from pytorch_lightning.utilities import rank_zero_info
+import os
+import subprocess
+import re
+
+class CosineAnnealingWarmRestartsDecay(CosineAnnealingWarmRestarts):
+    def __init__(self, optimizer, T_0, T_mult=1,
+                    eta_min=0, last_epoch=-1, verbose=False, decay=1):
+        super().__init__(optimizer, T_0, T_mult=T_mult,
+                            eta_min=eta_min, last_epoch=last_epoch, verbose=verbose)
+        self.decay = decay
+        self.initial_lrs = self.base_lrs
+    
+    def step(self, epoch=None):
+        if epoch == None:
+            if self.T_cur + 1 == self.T_i:
+                if self.verbose:
+                    print("multiplying base_lrs by {:.4f}".format(self.decay))
+                self.base_lrs = [base_lr * self.decay for base_lr in self.base_lrs]
+        else:
+            if epoch < 0:
+                raise ValueError("Expected non-negative epoch, but got {}".format(epoch))
+            if epoch >= self.T_0:
+                if self.T_mult == 1:
+                    n = int(epoch / self.T_0)
+                else:
+                    n = int(math.log((epoch / self.T_0 * (self.T_mult - 1) + 1), self.T_mult))
+            else:
+                n = 0
+            
+            self.base_lrs = [initial_lrs * (self.decay**n) for initial_lrs in self.initial_lrs]
+
+        super().step(epoch)
+
 
 def _cfg(url='', **kwargs):
     return {'url': url,
@@ -887,8 +923,14 @@ class Melchior(nn.Module):
         
         return x
 
+
+        
+
+
+
+
 class MelchiorModule(pl.LightningModule):
-    def __init__(self, train_loader, epochs, in_chans=1, embed_dim=512, depth=12, lr=1e-3, weight_decay=0.01):
+    def __init__(self, train_loader, epochs, in_chans=1, embed_dim=512, depth=12, lr=2e-3, weight_decay=0.01, accumulate_grad_batches=4):
         super().__init__()
         self.model = Melchior(in_chans=in_chans, embed_dim=embed_dim, depth=depth)
         self.lr = lr
@@ -897,6 +939,32 @@ class MelchiorModule(pl.LightningModule):
         self.smoothweights = torch.cat([torch.tensor([0.1]), (0.1 / (5 - 1)) * torch.ones(5 - 1)])
         self.train_loader = train_loader
         self.epochs = epochs
+        self.accumulate_grad_batches = accumulate_grad_batches
+        self.warmup_steps = 0
+        self.total_steps = 0
+
+    def setup(self, stage=None):
+        # Calculate total steps and warmup steps
+        if stage == 'fit':
+            # Get the total dataset size
+            dataset_size = len(self.train_loader.dataset)
+            
+            # Get the effective batch size (accounting for grad accumulation and GPUs)
+            num_devices = self.trainer.num_devices
+            effective_batch_size = (
+                self.train_loader.batch_size * 
+                num_devices * 
+                self.accumulate_grad_batches
+            )
+            
+            steps_per_epoch = math.ceil(dataset_size / effective_batch_size)
+            self.total_steps = steps_per_epoch * self.epochs
+            
+            # Calculate warmup steps (5% of total steps)
+            self.warmup_steps = int(0.05 * self.total_steps)
+            
+            rank_zero_info(f"Total training steps: {self.total_steps}")
+            rank_zero_info(f"Warmup steps: {self.warmup_steps}")
 
     def forward(self, x):
         return self.model(x)
@@ -904,6 +972,54 @@ class MelchiorModule(pl.LightningModule):
     def get_lr(self):
         optimizer = self.trainer.optimizers[0]
         return optimizer.param_groups[0]['lr']
+
+    def on_validation_epoch_end(self):
+        script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
+        if os.path.exists(script_path):
+            try:
+                result = subprocess.run([script_path, "melchior"], 
+                                        capture_output=True, 
+                                        text=True, 
+                                        check=True)
+                
+                # Parse the output
+                output = result.stdout
+                metrics = self.parse_sanity_check_output(output)
+                
+                for key, value in metrics.items():
+                    self.log(f'sanity_check_{key}', value, on_epoch=True)
+                    wandb.log({f"sanity_check_{key}": value})
+                
+                print("Sanity check completed successfully.")
+            except subprocess.CalledProcessError as e:
+                print(f"Sanity check failed with error: {e}")
+                print(f"Error output: {e.stderr}")
+        else:
+            print(f"Sanity check script not found at {script_path}")
+
+    def parse_sanity_check_output(self, output:str) -> dict:
+        metrics = {}
+        
+        match = re.search(r"Total: (\d+) Median accuracy: ([\d.]+) Average accuracy: ([\d.]+) std: ([\d.]+)", output)
+        if match:
+            metrics['total'] = int(match.group(1))
+            metrics['median_accuracy'] = float(match.group(2))
+            metrics['average_accuracy'] = float(match.group(3))
+            metrics['std'] = float(match.group(4))
+
+        match = re.search(r"Median  - Mismatch: ([\d.]+) Deletions: ([\d.]+) Insertions: ([\d.]+)", output)
+        if match:
+            metrics['median_mismatch'] = float(match.group(1))
+            metrics['median_deletions'] = float(match.group(2))
+            metrics['median_insertions'] = float(match.group(3))
+
+        match = re.search(r"Average - Mismatch: ([\d.]+) Deletions: ([\d.]+) Insertions: ([\d.]+)", output)
+        if match:
+            metrics['average_mismatch'] = float(match.group(1))
+            metrics['average_deletions'] = float(match.group(2))
+            metrics['average_insertions'] = float(match.group(3))
+
+        return metrics
 
     def training_step(self, batch, batch_idx):
         self.model.train()
@@ -943,22 +1059,35 @@ class MelchiorModule(pl.LightningModule):
             wandb.log({"val_loss": loss})
             return loss
         
+    # def optimizer_step(self, epoch, batch_idx, optimizer, optimizer_closure, on_tpu=False, using_native_amp=False, using_lbfgs=False):
+    #     optimizer.step(closure=optimizer_closure)
+
     def configure_optimizers(self):
-        optimizer = Ranger(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        # scheduler = LinearWarmupCosineAnnealingLR(optimizer, warmup_epochs=1, max_epochs=self.epochs, warmup_start_lr=1e-5, eta_min=1e-5)
+        scheduler = get_cosine_schedule_with_warmup(
             optimizer,
-            patience=1,
-            factor=0.5,
-            verbose=False,
-            threshold=0.1,
-            min_lr=1e-05
+            num_warmup_steps=self.warmup_steps,
+            num_training_steps=self.total_steps
         )
+
+        # scheduler = CosineAnnealingWarmRestartsDecay(optimizer, T_0=2, T_mult=2, eta_min=1e-5, decay=0.5)
+        # optimizer = Ranger(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        #     optimizer,
+        #     patience=1,
+        #     factor=0.5,
+        #     verbose=False,
+        #     threshold=0.1,
+        #     min_lr=1e-05
+        # )
 
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": scheduler,
                 "monitor": "val_loss",
+                "interval": "step",
             },
         }
 
