@@ -20,6 +20,7 @@ from ont_fast5_api.fast5_interface import get_fast5_file
 from torch.multiprocessing import Queue, Process
 from model.melchior import Melchior, _load_checkpoint, _load_state_dict
 from model.rodan import network
+from model.GCRTcall.model import Model 
 from utils.loss import med_mad 
 
 def segment(seg, s):
@@ -33,8 +34,10 @@ def load_model(args, device='cuda:0'):
         return load_melchior(device=device)
     elif args.model == "rodan":
         return load_rodan(device=device)
+    elif args.model == "gcrtcall":
+        return load_GCRTcall(device=device)
     
-def load_melchior(checkpoint_path='models/melchior/epoch=7-val_loss=0.29.ckpt', device='cuda:0'):
+def load_melchior(checkpoint_path='models/melchior/epoch=0-val_loss=0.43.ckpt', device='cuda:0'):
     model = Melchior(in_chans=1, embed_dim=512, depth=12)
     checkpoint = torch.load(checkpoint_path, map_location=device)
     state_dict = checkpoint['state_dict']
@@ -47,13 +50,21 @@ def load_melchior(checkpoint_path='models/melchior/epoch=7-val_loss=0.29.ckpt', 
     model.eval()
     return model
 
-def load_rodan(checkpoint_path='models/rodan/epoch=5-val_loss=0.36.ckpt', device='cuda:0'):
+def load_GCRTcall(device='cuda:0'):
+    model = Model()
+    checkpoint = torch.load('basecallers/GCRTcall/GCRTcall_ckpt.pt', map_location=device)
+
+    filtered = {k[7:] if k.startswith('module.') else k: v for k, v in checkpoint.items()}
+
+    model.load_state_dict(filtered)
+    model.to(device)
+    model.eval()
+    return model
+
+def load_rodan(device='cuda:0'):
     model = network()
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    state_dict = checkpoint['state_dict']
-    if sorted(list(state_dict.keys()))[0].startswith('model'):
-        state_dict = {k.replace('model.', ''): v for k, v in state_dict.items() if k.startswith('model.')}
-    model.load_state_dict(state_dict)
+    state_dict = torch.load('basecallers/rodan/rna.torch', map_location=device)
+    model.load_state_dict(state_dict['state_dict'])
     model.to(device)
     model.eval()
     return model
@@ -239,7 +250,7 @@ def ctcdecoder(logits, label, blank=False, beam_size=5, alphabet="NACGT", pre=No
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Basecall fast5 files')
     parser.add_argument("fast5dir", default=None, type=str)
-    parser.add_argument("-m", "--model", default="melchior", choices=["melchior", "rodan"], help="Type of model to use")
+    parser.add_argument("-m", "--model", default="melchior", choices=["melchior", "rodan", "gcrtcall"], help="Type of model to use")
     parser.add_argument("-r", "--reverse", default=True, action="store_true", help="reverse for RNA (default: True)")
     parser.add_argument("-b", "--batchsize", default=32, type=int, help="default: 32")
     parser.add_argument("-B", "--beamsize", default=5, type=int, help="CTC beam search size (default: 5)")
