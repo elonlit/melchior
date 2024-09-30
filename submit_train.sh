@@ -16,4 +16,4 @@ module load cuda/11.3
 ./setup.sh
 
 # Run your training script
-python train.py --model melchior --epochs 20 --batch_size 64 --num_gpus 4
+python train.py --model melchior --epochs 20 --batch_size 64
