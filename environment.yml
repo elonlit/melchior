@@ -4,142 +4,179 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - _libgcc_mutex=0.1=conda_forge
-  - _openmp_mutex=4.5=2_gnu
-  - bzip2=1.0.8=h4bc722e_7
-  - ca-certificates=2024.7.4=hbcca054_0
-  - cuda-cccl=12.6.37=0
-  - cuda-cccl_linux-64=12.6.37=0
-  - cuda-command-line-tools=12.6.0=0
-  - cuda-compiler=12.6.0=0
-  - cuda-cudart=12.6.37=0
-  - cuda-cudart-dev=12.6.37=0
-  - cuda-cudart-dev_linux-64=12.6.37=0
-  - cuda-cudart-static=12.6.37=0
-  - cuda-cudart-static_linux-64=12.6.37=0
-  - cuda-cudart_linux-64=12.6.37=0
-  - cuda-cuobjdump=12.6.20=0
-  - cuda-cupti=12.6.37=0
-  - cuda-cupti-dev=12.6.37=0
-  - cuda-cuxxfilt=12.6.20=0
-  - cuda-documentation=12.4.127=0
-  - cuda-driver-dev=12.6.37=0
-  - cuda-driver-dev_linux-64=12.6.37=0
-  - cuda-gdb=12.6.37=0
-  - cuda-libraries=12.6.0=0
-  - cuda-libraries-dev=12.6.0=0
-  - cuda-libraries-static=12.6.0=0
-  - cuda-nsight=12.6.20=0
-  - cuda-nvcc=12.4.131=0
-  - cuda-nvdisasm=12.6.20=0
-  - cuda-nvml-dev=12.6.37=2
-  - cuda-nvprof=12.6.37=0
-  - cuda-nvprune=12.6.20=0
-  - cuda-nvrtc=12.6.20=0
-  - cuda-nvrtc-dev=12.6.20=0
-  - cuda-nvrtc-static=12.6.20=0
-  - cuda-nvtx=12.6.37=0
-  - cuda-nvvp=12.6.37=0
-  - cuda-opencl=12.6.37=0
-  - cuda-opencl-dev=12.6.37=0
-  - cuda-profiler-api=12.6.37=0
-  - cuda-sanitizer-api=12.6.34=0
-  - cuda-toolkit=12.1.1=0
-  - cuda-tools=12.6.0=0
-  - cuda-version=12.6=3
-  - cuda-visual-tools=12.6.0=0
-  - gds-tools=1.11.0.15=0
-  - gmp=6.3.0=hac33072_2
-  - ld_impl_linux-64=2.40=hf3520f5_7
-  - libcublas=12.6.0.22=0
-  - libcublas-dev=12.6.0.22=0
-  - libcublas-static=12.6.0.22=0
-  - libcufft=11.2.6.28=0
-  - libcufft-dev=11.2.6.28=0
-  - libcufft-static=11.2.6.28=0
-  - libcufile=1.11.0.15=0
-  - libcufile-dev=1.11.0.15=0
-  - libcufile-static=1.11.0.15=0
-  - libcurand=10.3.7.37=0
-  - libcurand-dev=10.3.7.37=0
-  - libcurand-static=10.3.7.37=0
-  - libcusolver=11.6.4.38=0
-  - libcusolver-dev=11.6.4.38=0
-  - libcusolver-static=11.6.4.38=0
-  - libcusparse=12.5.2.23=0
-  - libcusparse-dev=12.5.2.23=0
-  - libcusparse-static=12.5.2.23=0
-  - libexpat=2.6.2=h59595ed_0
-  - libffi=3.4.2=h7f98852_5
-  - libgcc-ng=14.1.0=h77fa898_0
-  - libgomp=14.1.0=h77fa898_0
-  - libnpp=12.3.1.23=0
-  - libnpp-dev=12.3.1.23=0
-  - libnpp-static=12.3.1.23=0
-  - libnsl=2.0.1=hd590300_0
-  - libnvfatbin=12.6.20=0
-  - libnvfatbin-dev=12.6.20=0
-  - libnvfatbin-static=12.6.20=0
-  - libnvjitlink=12.6.20=0
-  - libnvjitlink-dev=12.6.20=0
-  - libnvjitlink-static=12.6.20=0
-  - libnvjpeg=12.3.3.23=0
-  - libnvjpeg-dev=12.3.3.23=0
-  - libnvjpeg-static=12.3.3.23=0
-  - libnvvm-samples=12.1.105=0
-  - libsqlite=3.46.0=hde9e2c9_0
-  - libstdcxx-ng=14.1.0=hc0a3c3a_0
-  - libuuid=2.38.1=h0b41bf4_0
-  - libxcrypt=4.4.36=hd590300_1
-  - libzlib=1.3.1=h4ab18f5_1
-  - ncurses=6.5=h59595ed_0
-  - nsight-compute=2024.1.1.4=0
-  - openssl=3.3.1=h4bc722e_2
-  - pip=24.2=pyhd8ed1ab_0
-  - python=3.11.9=hb806964_0_cpython
-  - readline=8.2=h8228510_1
-  - setuptools=72.2.0=pyhd8ed1ab_0
-  - tk=8.6.13=noxft_h4845f30_101
-  - tzdata=2024a=h0c530f3_0
-  - wheel=0.44.0=pyhd8ed1ab_0
-  - xz=5.2.6=h166bdaf_0
+  - _libgcc_mutex=0.1
+  - _openmp_mutex=4.5
+  - bzip2=1.0.8
+  - ca-certificates=2024.7.4
+  - cuda-cccl=12.6.37
+  - cuda-cccl_linux-64=12.6.37
+  - cuda-command-line-tools=12.6.0
+  - cuda-compiler=12.6.0
+  - cuda-cudart=12.6.37
+  - cuda-cudart-dev=12.6.37
+  - cuda-cudart-dev_linux-64=12.6.37
+  - cuda-cudart-static=12.6.37
+  - cuda-cudart-static_linux-64=12.6.37
+  - cuda-cudart_linux-64=12.6.37
+  - cuda-cuobjdump=12.6.20
+  - cuda-cupti=12.6.37
+  - cuda-cupti-dev=12.6.37
+  - cuda-cuxxfilt=12.6.20
+  - cuda-documentation=12.4.127
+  - cuda-driver-dev=12.6.37
+  - cuda-driver-dev_linux-64=12.6.37
+  - cuda-gdb=12.6.37
+  - cuda-libraries=12.6.0
+  - cuda-libraries-dev=12.6.0
+  - cuda-libraries-static=12.6.0
+  - cuda-nsight=12.6.20
+  - cuda-nvcc=12.4.131
+  - cuda-nvdisasm=12.6.20
+  - cuda-nvml-dev=12.6.37
+  - cuda-nvprof=12.6.37
+  - cuda-nvprune=12.6.20
+  - cuda-nvrtc=12.6.20
+  - cuda-nvrtc-dev=12.6.20
+  - cuda-nvrtc-static=12.6.20
+  - cuda-nvtx=12.6.37
+  - cuda-nvvp=12.6.37
+  - cuda-opencl=12.6.37
+  - cuda-opencl-dev=12.6.37
+  - cuda-profiler-api=12.6.37
+  - cuda-sanitizer-api=12.6.34
+  - cuda-toolkit=12.1.1
+  - cuda-tools=12.6.0
+  - cuda-version=12.6
+  - cuda-visual-tools=12.6.0
+  - gds-tools=1.11.0.15
+  - gmp=6.3.0
+  - ld_impl_linux-64=2.40
+  - libcublas=12.6.0.22
+  - libcublas-dev=12.6.0.22
+  - libcublas-static=12.6.0.22
+  - libcufft=11.2.6.28
+  - libcufft-dev=11.2.6.28
+  - libcufft-static=11.2.6.28
+  - libcufile=1.11.0.15
+  - libcufile-dev=1.11.0.15
+  - libcufile-static=1.11.0.15
+  - libcurand=10.3.7.37
+  - libcurand-dev=10.3.7.37
+  - libcurand-static=10.3.7.37
+  - libcusolver=11.6.4.38
+  - libcusolver-dev=11.6.4.38
+  - libcusolver-static=11.6.4.38
+  - libcusparse=12.5.2.23
+  - libcusparse-dev=12.5.2.23
+  - libcusparse-static=12.5.2.23
+  - libexpat=2.6.2
+  - libffi=3.4.2
+  - libgcc-ng=14.1.0
+  - libgomp=14.1.0
+  - libnpp=12.3.1.23
+  - libnpp-dev=12.3.1.23
+  - libnpp-static=12.3.1.23
+  - libnsl=2.0.1
+  - libnvfatbin=12.6.20
+  - libnvfatbin-dev=12.6.20
+  - libnvfatbin-static=12.6.20
+  - libnvjitlink=12.6.20
+  - libnvjitlink-dev=12.6.20
+  - libnvjitlink-static=12.6.20
+  - libnvjpeg=12.3.3.23
+  - libnvjpeg-dev=12.3.3.23
+  - libnvjpeg-static=12.3.3.23
+  - libnvvm-samples=12.1.105
+  - libsqlite=3.46.0
+  - libstdcxx-ng=14.1.0
+  - libuuid=2.38.1
+  - libxcrypt=4.4.36
+  - libzlib=1.3.1
+  - ncurses=6.5
+  - nsight-compute=2024.1.1.4
+  - openssl=3.3.1
+  - pip=24.2
+  - python=3.11.9
+  - readline=8.2
+  - setuptools=72.2.0
+  - tk=8.6.13
+  - tzdata=2024a
+  - wheel=0.44.0
+  - xz=5.2.6
   - pip:
       - absl-py==2.1.0
       - aiohappyeyeballs==2.4.0
       - aiohttp==3.10.5
       - aiosignal==1.3.1
+      - aliyun-python-sdk-core==2.15.2
+      - aliyun-python-sdk-kms==2.16.5
+      - annotated-types==0.7.0
       - attrs==24.2.0
+      - audioread==3.0.1
+      - beautifulsoup4==4.12.3
       - causal-conv1d==1.4.0
       - certifi==2024.7.4
+      - cffi==1.17.1
       - charset-normalizer==3.3.2
       - click==8.1.7
+      - coloredlogs==15.0.1
       - contourpy==1.2.1
+      - crcmod==1.7
+      - cryptography==43.0.1
       - cycler==0.12.1
+      - decorator==5.1.1
+      - deepspeed==0.15.1
+      - distance==0.1.3
       - docker-pycreds==0.4.0
+      - edit-distance==1.0.6
+      - editdistance==0.8.1
       - einops==0.8.0
+      - espnet-tts-frontend==0.0.3
+      - et-xmlfile==1.1.0
+      - fairscale==0.4.13
       - fast-ctc-decode==0.3.6
       - filelock==3.13.1
       - fonttools==4.53.1
       - frozenlist==1.4.1
       - fsspec==2024.2.0
+      - funasr==0.7.0
+      - g2p==2.1.1
+      - g2p-en==2.1.0
+      - gdown==5.2.0
       - gitdb==4.0.11
       - gitpython==3.1.43
       - grpcio==1.65.5
       - h5py==3.11.0
+      - hjson==3.1.0
       - huggingface-hub==0.24.6
+      - humanfriendly==10.0
       - idna==3.7
+      - inflect==7.4.0
+      - jaconv==0.4.0
+      - jamo==0.4.1
       - jinja2==3.1.3
+      - jmespath==0.10.0
+      - joblib==1.4.2
+      - kaldiio==2.18.0
       - kiwisolver==1.4.5
+      - lazy-loader==0.4
+      - librosa==0.10.2.post1
       - lightning==2.4.0
       - lightning-utilities==0.11.6
+      - llvmlite==0.43.0
       - mamba-ssm==2.2.2
       - markdown==3.7
       - markupsafe==2.1.5
       - matplotlib==3.9.2
+      - more-itertools==10.5.0
       - mpmath==1.3.0
+      - msgpack==1.1.0
       - multidict==6.0.5
+      - munkres==1.1.4
       - networkx==3.2.1
       - ninja==1.11.1.1
+      - nltk==3.9.1
+      - numba==0.60.0
       - numpy==1.26.3
       - nvidia-cublas-cu12==12.1.3.1
       - nvidia-cuda-cupti-cu12==12.1.105
@@ -150,36 +187,60 @@ dependencies:
       - nvidia-curand-cu12==10.3.2.106
       - nvidia-cusolver-cu12==11.4.5.107
       - nvidia-cusparse-cu12==12.1.0.106
+      - nvidia-ml-py==12.560.30
       - nvidia-nccl-cu12==2.20.5
       - nvidia-nvjitlink-cu12==12.1.105
       - nvidia-nvtx-cu12==12.1.105
       - ont-fast5-api==4.1.3
+      - openpyxl==3.1.5
+      - oss2==2.19.0
       - packaging==24.1
+      - panphon==0.21.2
       - pillow==10.2.0
       - platformdirs==4.2.2
+      - pooch==1.8.2
       - progressbar33==2.4
       - protobuf==5.27.3
       - psutil==6.0.0
+      - py-cpuinfo==9.0.0
+      - pycparser==2.22
+      - pycryptodome==3.20.0
+      - pydantic==2.8.2
+      - pydantic-core==2.20.1
       - pyparsing==3.1.2
+      - pypinyin==0.53.0
       - pysam==0.22.1
+      - pysocks==1.7.1
       - python-dateutil==2.9.0.post0
       - pytorch-crf==0.7.2
       - pytorch-lightning==2.4.0
+      - pytorch-ranger==0.1.1
+      - pytorch-wpe==0.0.1
       - pyyaml==6.0.2
       - regex==2024.7.24
       - requests==2.32.3
       - safetensors==0.4.4
+      - scikit-learn==1.5.2
+      - scipy==1.14.1
+      - sentencepiece==0.2.0
       - sentry-sdk==2.13.0
       - setproctitle==1.3.3
       - six==1.16.0
       - smmap==5.0.1
+      - soundfile==0.12.1
+      - soupsieve==2.6
+      - soxr==0.5.0.post1
       - sympy==1.12
       - tensorboard==2.17.1
       - tensorboard-data-server==0.7.2
       - tensorboardx==2.6.2.2
+      - text-unidecode==1.3
+      - textgrid==1.6.1
+      - threadpoolctl==3.5.0
       - timm==1.0.8
       - tokenizers==0.19.1
       - torch==2.4.0+cu121
+      - torch-complex==0.4.4
       - torchaudio==2.4.0+cu121
       - torchcrf==1.1.0
       - torchinfo==1.8.0
@@ -188,9 +249,11 @@ dependencies:
       - tqdm==4.66.5
       - transformers==4.44.1
       - triton==3.0.0
-      - typing-extensions==4.9.0
+      - typeguard==4.3.0
+      - typing-extensions==4.12.2
+      - unicodecsv==0.14.1
+      - unidecode==1.3.8
       - urllib3==2.2.2
       - wandb==0.17.7
       - werkzeug==3.0.3
       - yarl==1.9.4
-prefix: /home/rushikesh/anaconda3/envs/melchior
