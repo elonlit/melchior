@@ -37,7 +37,39 @@ def load_model(args, device='cuda:0'):
     elif args.model == "gcrtcall":
         return load_GCRTcall(device=device)
     
-def load_melchior(checkpoint_path='models/melchior/epoch=0-val_loss=0.43.ckpt', device='cuda:0'):
+
+import os
+import re
+
+def get_latest_checkpoint(checkpoint_dir='models/melchior'):
+    # Get all checkpoint files
+    checkpoint_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.ckpt')]
+    
+    if not checkpoint_files:
+        raise ValueError(f"No checkpoints found in {checkpoint_dir}")
+    
+    # Extract epoch numbers and create (epoch, filename) pairs
+    epoch_file_pairs = []
+    for filename in checkpoint_files:
+        match = re.search(r'epoch=(\d+)', filename)
+        if match:
+            epoch = int(match.group(1))
+            epoch_file_pairs.append((epoch, filename))
+    
+    if not epoch_file_pairs:
+        raise ValueError(f"No valid checkpoint files found in {checkpoint_dir}")
+    
+    # Sort by epoch number (descending) and get the filename with the highest epoch
+    latest_checkpoint = max(epoch_file_pairs, key=lambda x: x[0])[1]
+    
+    return os.path.join(checkpoint_dir, latest_checkpoint)
+
+def load_melchior(checkpoint_path=None, device='cuda:0'):
+    if checkpoint_path is None:
+        checkpoint_path = get_latest_checkpoint()
+    
+    print(f"Loading checkpoint from: {checkpoint_path}")
+    
     model = Melchior(in_chans=1, embed_dim=512, depth=12)
     checkpoint = torch.load(checkpoint_path, map_location=device)
     state_dict = checkpoint['state_dict']
@@ -49,6 +81,19 @@ def load_melchior(checkpoint_path='models/melchior/epoch=0-val_loss=0.43.ckpt', 
     model.to(device)
     model.eval()
     return model
+
+# def load_melchior(checkpoint_path='models/melchior_old/epoch=0-val_loss=0.43.ckpt', device='cuda:0'):
+#     model = Melchior(in_chans=1, embed_dim=512, depth=12)
+#     checkpoint = torch.load(checkpoint_path, map_location=device)
+#     state_dict = checkpoint['state_dict']
+#     if sorted(list(state_dict.keys()))[0].startswith('model'):
+#         state_dict = {k.replace('model.', ''): v for k, v in state_dict.items() if k.startswith('model.')}
+#     if sorted(list(state_dict.keys()))[0].startswith('model'):
+#         state_dict = {k.replace('block.', ''): v for k, v in state_dict.items() if k.startswith('block.')}
+#     model.load_state_dict(state_dict)
+#     model.to(device)
+#     model.eval()
+#     return model
 
 def load_GCRTcall(device='cuda:0'):
     model = Model()
