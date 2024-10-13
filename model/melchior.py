@@ -923,12 +923,6 @@ class Melchior(nn.Module):
         
         return x
 
-
-        
-
-
-
-
 class MelchiorModule(pl.LightningModule):
     def __init__(self, train_loader, epochs, in_chans=1, embed_dim=512, depth=12, lr=2e-3, weight_decay=0.01, accumulate_grad_batches=4):
         super().__init__()
@@ -972,54 +966,6 @@ class MelchiorModule(pl.LightningModule):
     def get_lr(self):
         optimizer = self.trainer.optimizers[0]
         return optimizer.param_groups[0]['lr']
-
-    def on_validation_epoch_end(self):
-        script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
-        if os.path.exists(script_path):
-            try:
-                result = subprocess.run([script_path, "melchior"], 
-                                        capture_output=True, 
-                                        text=True, 
-                                        check=True)
-                
-                # Parse the output
-                output = result.stdout
-                metrics = self.parse_sanity_check_output(output)
-                
-                for key, value in metrics.items():
-                    self.log(f'sanity_check_{key}', value, on_epoch=True)
-                    wandb.log({f"sanity_check_{key}": value})
-                
-                print("Sanity check completed successfully.")
-            except subprocess.CalledProcessError as e:
-                print(f"Sanity check failed with error: {e}")
-                print(f"Error output: {e.stderr}")
-        else:
-            print(f"Sanity check script not found at {script_path}")
-
-    def parse_sanity_check_output(self, output:str) -> dict:
-        metrics = {}
-        
-        match = re.search(r"Total: (\d+) Median accuracy: ([\d.]+) Average accuracy: ([\d.]+) std: ([\d.]+)", output)
-        if match:
-            metrics['total'] = int(match.group(1))
-            metrics['median_accuracy'] = float(match.group(2))
-            metrics['average_accuracy'] = float(match.group(3))
-            metrics['std'] = float(match.group(4))
-
-        match = re.search(r"Median  - Mismatch: ([\d.]+) Deletions: ([\d.]+) Insertions: ([\d.]+)", output)
-        if match:
-            metrics['median_mismatch'] = float(match.group(1))
-            metrics['median_deletions'] = float(match.group(2))
-            metrics['median_insertions'] = float(match.group(3))
-
-        match = re.search(r"Average - Mismatch: ([\d.]+) Deletions: ([\d.]+) Insertions: ([\d.]+)", output)
-        if match:
-            metrics['average_mismatch'] = float(match.group(1))
-            metrics['average_deletions'] = float(match.group(2))
-            metrics['average_insertions'] = float(match.group(3))
-
-        return metrics
 
     def training_step(self, batch, batch_idx):
         self.model.train()
