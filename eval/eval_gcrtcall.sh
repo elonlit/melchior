@@ -17,7 +17,7 @@ run_basecalling() {
     local total_files=$(find data/test/${dataset} -name "*.fast5" | wc -l)
     local processed_files=0
 
-    python -m eval.basecall data/test/${dataset} -m gcrtcall -b 1024 | 
+    python -m eval.basecall data/test/${dataset} -m gcrtcall -b 64 | 
     while IFS= read -r line
     do
         if [[ $line == ">"* ]]; then
