@@ -16,7 +16,7 @@
 # from collections import OrderedDict
 
 # import wandb
-# import pytorch_lightning as pl
+import pytorch_lightning as pl
 
 # from utils.loss import ctc_label_smoothing_loss
 # from pytorch_lightning import Trainer
@@ -248,80 +248,80 @@
 #     return config
 
 
-# class RodanModule(pl.LightningModule):
-#     def __init__(self, lr=1e-3, weight_decay=0.01):
-#         super().__init__()
-#         self.model = network()
-#         self.lr = lr
-#         self.weight_decay = weight_decay
-#         self.save_hyperparameters()
-#         self.smoothweights = torch.cat([torch.tensor([0.1]), (0.1 / (5 - 1)) * torch.ones(5 - 1)])
+class RodanModule(pl.LightningModule):
+    def __init__(self, lr=1e-3, weight_decay=0.01):
+        super().__init__()
+        self.model = network()
+        self.lr = lr
+        self.weight_decay = weight_decay
+        self.save_hyperparameters()
+        self.smoothweights = torch.cat([torch.tensor([0.1]), (0.1 / (5 - 1)) * torch.ones(5 - 1)])
 
-#     def forward(self, x):
-#         return self.model(x)
+    def forward(self, x):
+        return self.model(x)
     
-#     def get_lr(self):
-#         optimizer = self.trainer.optimizers[0]
-#         return optimizer.param_groups[0]['lr']
+    def get_lr(self):
+        optimizer = self.trainer.optimizers[0]
+        return optimizer.param_groups[0]['lr']
 
-#     def training_step(self, batch, batch_idx):
-#         self.model.train()
-#         event, event_len, label, label_len = batch
-#         event = torch.unsqueeze(event, 1)
-#         label = label[:, :max(label_len)]
-#         output = self(event)
+    def training_step(self, batch, batch_idx):
+        self.model.train()
+        event, event_len, label, label_len = batch
+        event = torch.unsqueeze(event, 1)
+        label = label[:, :max(label_len)]
+        output = self(event)
 
-#         losses = ctc_label_smoothing_loss(output, label, label_len, self.smoothweights)
-#         loss = losses["loss"]
+        losses = ctc_label_smoothing_loss(output, label, label_len, self.smoothweights)
+        loss = losses["loss"]
 
-#         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
 
-#         current_lr = self.get_lr()
-#         self.log('learning_rate', current_lr, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
+        current_lr = self.get_lr()
+        self.log('learning_rate', current_lr, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
         
-#         wandb.log({"train_loss": loss,
-#                    "learning_rate": current_lr})
+        wandb.log({"train_loss": loss,
+                   "learning_rate": current_lr})
         
-#         return loss
+        return loss
     
-#     def on_train_epoch_end(self):
-#         current_lr = self.get_lr()
-#         self.log('learning_rate_epoch', current_lr, on_step=False, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
-#         wandb.log({"learning_rate_epoch": current_lr})
+    def on_train_epoch_end(self):
+        current_lr = self.get_lr()
+        self.log('learning_rate_epoch', current_lr, on_step=False, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        wandb.log({"learning_rate_epoch": current_lr})
 
-#     def validation_step(self, batch, batch_idx):
-#         self.model.eval()
-#         with torch.no_grad():
-#             event, event_len, label, label_len = batch
-#             event = torch.unsqueeze(event, 1)
-#             label = label[:, :max(label_len)]
-#             output = self(event)
+    def validation_step(self, batch, batch_idx):
+        self.model.eval()
+        with torch.no_grad():
+            event, event_len, label, label_len = batch
+            event = torch.unsqueeze(event, 1)
+            label = label[:, :max(label_len)]
+            output = self(event)
 
-#             losses = ctc_label_smoothing_loss(output, label, label_len, self.smoothweights)
-#             loss = losses["loss"]            
+            losses = ctc_label_smoothing_loss(output, label, label_len, self.smoothweights)
+            loss = losses["loss"]            
 
-#             self.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
-#             wandb.log({"val_loss": loss})
-#             return loss
+            self.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+            wandb.log({"val_loss": loss})
+            return loss
 
-#     def configure_optimizers(self):
-#         optimizer = Ranger(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-#         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-#             optimizer,
-#             patience=1,
-#             factor=0.5,
-#             verbose=False,
-#             threshold=0.1,
-#             min_lr=1e-05
-#         )
+    def configure_optimizers(self):
+        optimizer = Ranger(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            patience=1,
+            factor=0.5,
+            verbose=False,
+            threshold=0.1,
+            min_lr=1e-05
+        )
 
-#         return {
-#             "optimizer": optimizer,
-#             "lr_scheduler": {
-#                 "scheduler": scheduler,
-#                 "monitor": "val_loss",
-#             },
-#         }
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "val_loss",
+            },
+        }
 
 #!/usr/bin/env python
 # 

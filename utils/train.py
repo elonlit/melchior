@@ -16,6 +16,8 @@ from pytorch_lightning.strategies import DDPStrategy
 import wandb
 from lightning.pytorch.loggers import WandbLogger
 import argparse
+import subprocess
+import re
 
 # Saves the model checkpoint
 def get_checkpoint(epoch, model, optimizer, scheduler):
@@ -25,6 +27,85 @@ def get_checkpoint(epoch, model, optimizer, scheduler):
         'optimizer': optimizer.state_dict(),
         'scheduler': scheduler.state_dict()
     }
+
+class SanityCheckCallback(pl.Callback):
+    def __init__(self, script_path):
+        super().__init__()
+        self.script_path = script_path
+        self.output_file = "eval/sanity_check_outputs/accuracy.txt"
+
+    def on_save_checkpoint(self, trainer, pl_module, checkpoint):        
+        self.run_sanity_check(pl_module)
+
+    def run_sanity_check(self, pl_module):
+        if os.path.exists(self.script_path):
+            try:
+                print(f"Running sanity check script: {self.script_path}")
+                subprocess.run([self.script_path, "melchior"], 
+                               check=True)  # Set a timeout
+                
+                # Read the output from the file
+                with open(self.output_file, 'r') as f:
+                    output = f.read()
+                                
+                metrics = self.parse_sanity_check_output(output)
+                
+                if not metrics:
+                    print("Warning: No metrics were parsed from the output.")
+                
+                wandb_metrics = {}
+                for key, value in metrics.items():
+                    metric_name = f'sanity_check_{key}'
+                    pl_module.log(metric_name, value, on_epoch=True, sync_dist=True)
+                    wandb_metrics[metric_name] = value
+                
+                # Log directly to wandb
+                if wandb.run is not None:
+                    wandb.log(wandb_metrics)
+                else:
+                    print("Warning: wandb.run is None. Make sure wandb is properly initialized.")
+                
+                print("Sanity check completed successfully.")
+            except subprocess.CalledProcessError as e:
+                print(f"Sanity check failed with error: {e}")
+                print(f"Return code: {e.returncode}")
+            except subprocess.TimeoutExpired as e:
+                print("Sanity check timed out")
+            except Exception as e:
+                print(f"Unexpected error during sanity check: {str(e)}")
+        else:
+            print(f"Sanity check script not found at {self.script_path}")
+
+    def parse_sanity_check_output(self, output: str) -> dict:
+        metrics = {}
+        
+        # Parse total and accuracies
+        total_accuracy_match = re.search(r"Total: (\d+) Median accuracy: ([\d.]+) Average accuracy: ([\d.]+) std: ([\d.]+)", output)
+        if total_accuracy_match:
+            metrics['total'] = int(total_accuracy_match.group(1))
+            metrics['median_accuracy'] = float(total_accuracy_match.group(2))
+            metrics['average_accuracy'] = float(total_accuracy_match.group(3))
+            metrics['std'] = float(total_accuracy_match.group(4))
+        
+        # Parse median errors
+        median_errors_match = re.search(r"Median  - Mismatch: ([\d.]+) Deletions: ([\d.]+) Insertions: ([\d.]+)", output)
+        if median_errors_match:
+            metrics['median_mismatch'] = float(median_errors_match.group(1))
+            metrics['median_deletions'] = float(median_errors_match.group(2))
+            metrics['median_insertions'] = float(median_errors_match.group(3))
+        
+        # Parse average errors
+        average_errors_match = re.search(r"Average - Mismatch: ([\d.]+) Deletions: ([\d.]+) Insertions: ([\d.]+)", output)
+        if average_errors_match:
+            metrics['average_mismatch'] = float(average_errors_match.group(1))
+            metrics['average_deletions'] = float(average_errors_match.group(2))
+            metrics['average_insertions'] = float(average_errors_match.group(3))
+                
+        if not metrics:
+            print("Warning: No metrics were parsed from the output.")
+            print("Please check if the sanity check script output matches the expected format.")
+        
+        return metrics
 
 def train_melchior(state_dict:Union[None, str] = None, 
           epochs:int=20,
@@ -38,8 +119,8 @@ def train_melchior(state_dict:Union[None, str] = None,
     data_train = MelchiorDataset("data/train_val/rna-train.hdf5")
     data_valid = MelchiorDataset("data/train_val/rna-valid.hdf5")
     
-    train_loader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=16)
-    val_loader = DataLoader(data_valid, batch_size=batch_size, shuffle=False, num_workers=16)
+    train_loader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=8)
+    val_loader = DataLoader(data_valid, batch_size=batch_size, shuffle=False, num_workers=8)
 
     # Create model
     model = MelchiorModule(lr=lr, weight_decay=weight_decay, train_loader=train_loader, epochs=epochs, accumulate_grad_batches=args.accumulate_grad_batches)
@@ -52,6 +133,8 @@ def train_melchior(state_dict:Union[None, str] = None,
     wandb_logger = WandbLogger(log_model="all")
     
     swa_callback = pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2)
+    sanity_check_script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
+    sanity_check_callback = SanityCheckCallback(sanity_check_script_path)
 
     trainer = pl.Trainer(
         profiler="simple",
@@ -59,7 +142,7 @@ def train_melchior(state_dict:Union[None, str] = None,
         accelerator='gpu',
         devices=num_gpus,
         strategy='ddp',
-        callbacks=[checkpoint_callback, swa_callback],
+        callbacks=[checkpoint_callback, swa_callback, sanity_check_callback],
         log_every_n_steps=1000,
         accumulate_grad_batches=args.accumulate_grad_batches,
         logger=wandb_logger,
