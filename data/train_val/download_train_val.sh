@@ -13,7 +13,7 @@ download_if_not_exists() {
         echo "$filename already exists. Skipping download."
     else
         echo "Downloading $filename..."
-        aria2c -x 16 -s 16 -o "$filename" "$url"
+        wget -O "$filename" "$url"  # Use wget to download the file
         if [ $? -eq 0 ]; then
             echo "$filename downloaded successfully."
         else
