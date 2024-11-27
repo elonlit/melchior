@@ -17,7 +17,7 @@ download_if_not_exists() {
         echo "$filename already exists. Skipping download."
     else
         echo "Downloading $filename..."
-        aria2c -x 16 -s 16 -o "$filename" "$url"
+        wget -O "$filename" "$url"
         if [ $? -eq 0 ]; then
             echo "$filename downloaded successfully."
         else
@@ -58,7 +58,6 @@ extract_and_rename "mouse-dataset.tgz" "mouse-dataset"
 extract_and_rename "poplar-dataset.tgz" "poplar-dataset"
 extract_and_rename "yeast-dataset.tgz" "yeast-dataset"
 tar -xzf "transcriptomes.tgz" # Extract the transcriptomes.tgz file
-rm -rf *.fasta
 mkdir transcriptomes
 # Move all .fasta files to the transcriptomes directory
 mv *.fasta transcriptomes
