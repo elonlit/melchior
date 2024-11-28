@@ -174,11 +174,11 @@ if __name__ == '__main__':
     parser.add_argument("--model", type=str, default="melchior", choices=["melchior"]) # Add argument for model {rodan, melchior}
     parser.add_argument("--state_dict", type=str, default=None)
     parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--batch_size", type=int, default=12)
+    parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=2e-3)
     parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--save_path", type=str, default="models/melchior")
-    parser.add_argument("--accumulate_grad_batches", type=int, default=0)
+    parser.add_argument("--accumulate_grad_batches", type=int, default=1)
     parser.add_argument("--num_gpus", type=int, default=None, help="Number of GPUs to use (default: all available GPUs)")
     args = parser.parse_args()
 
