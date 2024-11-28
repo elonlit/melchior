@@ -178,7 +178,7 @@ if __name__ == '__main__':
     parser.add_argument("--lr", type=float, default=2e-3)
     parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--save_path", type=str, default="models/melchior")
-    parser.add_argument("--accumulate_grad_batches", type=int, default=4)
+    parser.add_argument("--accumulate_grad_batches", type=int, default=0)
     parser.add_argument("--num_gpus", type=int, default=None, help="Number of GPUs to use (default: all available GPUs)")
     args = parser.parse_args()
 

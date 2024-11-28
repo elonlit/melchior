@@ -885,12 +885,12 @@ class Head(nn.Module):
         return x
 
 class Melchior(nn.Module):
-    def __init__(self, in_chans=1, embed_dim=512, depth=12, num_heads=8, mlp_ratio=4., 
+    def __init__(self, in_chans=1, embed_dim=1024, depth=14, num_heads=8, mlp_ratio=4., 
                  qkv_bias=False, drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1,
                  layer_scale=1e-5, layer_scale_conv=None, output_length=420):
         super().__init__()
 
-        self.stem = FastEmbed(in_chans=in_chans, in_dim=256, embed_dim=embed_dim)
+        self.stem = FastEmbed(in_chans=in_chans, in_dim=512, embed_dim=embed_dim)
         
         self.pos_embed = nn.Parameter(torch.zeros(1, 4096, embed_dim))
         trunc_normal_(self.pos_embed, std=.02)
