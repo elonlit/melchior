@@ -885,7 +885,7 @@ class Head(nn.Module):
         return x
 
 class Melchior(nn.Module):
-    def __init__(self, in_chans=1, embed_dim=1024, depth=14, num_heads=8, mlp_ratio=4., 
+    def __init__(self, in_chans=1, embed_dim=1024, depth=20, num_heads=8, mlp_ratio=4., 
                  qkv_bias=False, drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1,
                  layer_scale=1e-5, layer_scale_conv=None, output_length=420):
         super().__init__()
@@ -924,7 +924,7 @@ class Melchior(nn.Module):
         return x
 
 class MelchiorModule(pl.LightningModule):
-    def __init__(self, train_loader, epochs, in_chans=1, embed_dim=512, depth=12, lr=2e-3, weight_decay=0.01, accumulate_grad_batches=4):
+    def __init__(self, train_loader, epochs, in_chans=1, embed_dim=768, depth=20, lr=2e-3, weight_decay=0.01, accumulate_grad_batches=1):
         super().__init__()
         self.model = Melchior(in_chans=in_chans, embed_dim=embed_dim, depth=depth)
         self.lr = lr

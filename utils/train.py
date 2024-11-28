@@ -119,8 +119,8 @@ def train_melchior(state_dict:Union[None, str] = None,
     data_train = MelchiorDataset("data/train_val/rna-train.hdf5")
     data_valid = MelchiorDataset("data/train_val/rna-valid.hdf5")
     
-    train_loader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=8)
-    val_loader = DataLoader(data_valid, batch_size=batch_size, shuffle=False, num_workers=8)
+    train_loader = DataLoader(data_train, batch_size=batch_size, shuffle=True, num_workers=16, pin_memory=True)
+    val_loader = DataLoader(data_valid, batch_size=batch_size, shuffle=False, num_workers=16, pin_memory=True)
 
     # Create model
     model = MelchiorModule(lr=lr, weight_decay=weight_decay, train_loader=train_loader, epochs=epochs, accumulate_grad_batches=args.accumulate_grad_batches)
@@ -133,7 +133,7 @@ def train_melchior(state_dict:Union[None, str] = None,
     
     # Create trainer
     checkpoint_callback = ModelCheckpoint(dirpath=save_path, filename='{epoch}-{val_loss:.2f}', save_top_k=-1, monitor='val_loss')
-    wandb_logger = WandbLogger(log_model="all")
+    wandb_logger = WandbLogger(log_model="all", entity="julian-q")
     
     swa_callback = pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2)
     sanity_check_script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
@@ -144,7 +144,7 @@ def train_melchior(state_dict:Union[None, str] = None,
         max_epochs=epochs,
         accelerator='gpu',
         devices=num_gpus,
-        strategy='ddp',
+        precision="bf16-mixed",
         callbacks=[checkpoint_callback, swa_callback, sanity_check_callback],
         log_every_n_steps=1000,
         accumulate_grad_batches=args.accumulate_grad_batches,
