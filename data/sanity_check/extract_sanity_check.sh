@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-tar -xzf test-data.tar
+# Extract into the test-data/0/ directory
+tar -xvf test-data.tar -C test-data/0/
