@@ -6,6 +6,7 @@ data/**
 !data/
 !data/**/
 !data/**/*.sh
+!data/sanity_check/test-data.tar
 
 lightning_logs/
 models/
