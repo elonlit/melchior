@@ -125,6 +125,9 @@ def train_melchior(state_dict:Union[None, str] = None,
     # Create model
     model = MelchiorModule(lr=lr, weight_decay=weight_decay, train_loader=train_loader, epochs=epochs, accumulate_grad_batches=args.accumulate_grad_batches)
 
+    # Print model summary
+    print(summary(model, input_size=(batch_size, 1, 4096)))
+
     if num_gpus is None:
         num_gpus = torch.cuda.device_count()
     
