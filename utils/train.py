@@ -18,6 +18,7 @@ from lightning.pytorch.loggers import WandbLogger
 import argparse
 import subprocess
 import re
+torch.set_float32_matmul_precision('medium')
 
 # Saves the model checkpoint
 def get_checkpoint(epoch, model, optimizer, scheduler):

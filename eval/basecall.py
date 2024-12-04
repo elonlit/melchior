@@ -70,7 +70,7 @@ def load_melchior(checkpoint_path=None, device='cuda:0'):
     
     print(f"Loading checkpoint from: {checkpoint_path}")
     
-    model = Melchior(in_chans=1, embed_dim=512, depth=12)
+    model = Melchior(in_chans=1, embed_dim=768, depth=20)
     checkpoint = torch.load(checkpoint_path, map_location=device)
     state_dict = checkpoint['state_dict']
     if sorted(list(state_dict.keys()))[0].startswith('model'):
