@@ -924,7 +924,7 @@ class Melchior(nn.Module):
         return x
 
 class MelchiorModule(pl.LightningModule):
-    def __init__(self, train_loader, epochs, in_chans=1, embed_dim=768, depth=20, lr=2e-3, weight_decay=0.01, accumulate_grad_batches=1):
+    def __init__(self, train_loader, epochs, in_chans=1, embed_dim=768, depth=20, lr=6e-4, weight_decay=0.01, accumulate_grad_batches=1):
         super().__init__()
         self.model = Melchior(in_chans=in_chans, embed_dim=embed_dim, depth=depth)
         self.lr = lr
