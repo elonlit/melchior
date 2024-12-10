@@ -133,7 +133,7 @@ def train_melchior(state_dict:Union[None, str] = None,
         num_gpus = torch.cuda.device_count()
     
     # Create trainer
-    checkpoint_callback = ModelCheckpoint(dirpath=save_path, filename='{epoch}-{val_loss:.2f}', save_top_k=-1, monitor='val_loss')
+    checkpoint_callback = ModelCheckpoint(dirpath=save_path, filename='{epoch}-{val_loss:.2f}', save_top_k=-1, monitor='val_loss', save_on_train_epoch_end=True)
     wandb_logger = WandbLogger(log_model="all", entity="julian-q")
     
     swa_callback = pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2)
