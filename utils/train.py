@@ -116,6 +116,22 @@ def train_melchior(state_dict:Union[None, str] = None,
           save_path:Union[None, str]="models/melchior",
           num_gpus:Union[None, int]=None) -> tuple[list, list, list]:
     
+    if wandb.run is not None:
+        wandb.finish()
+
+    wandb.init(
+        project="melchior",
+        config={
+            "epochs": epochs,
+            "batch_size": batch_size,
+            "learning_rate": lr,
+            "weight_decay": weight_decay,
+        },
+        reinit=True
+    )
+
+    wandb_logger = WandbLogger(log_model="all")
+
     # Create data module
     data_train = MelchiorDataset("data/train_val/rna-train.hdf5")
     data_valid = MelchiorDataset("data/train_val/rna-valid.hdf5")
@@ -125,16 +141,26 @@ def train_melchior(state_dict:Union[None, str] = None,
 
     # Create model
     model = MelchiorModule(lr=lr, weight_decay=weight_decay, train_loader=train_loader, epochs=epochs, accumulate_grad_batches=args.accumulate_grad_batches)
+    wandb.watch(model, log="all", log_freq=100)
 
     # Print model summary
     print(summary(model, input_size=(batch_size, 1, 4096)))
 
     if num_gpus is None:
         num_gpus = torch.cuda.device_count()
+
+    if num_gpus > 1:
+        strategy = DDPStrategy(find_unused_parameters=False)
+    else:
+        strategy = "auto"
     
     # Create trainer
-    checkpoint_callback = ModelCheckpoint(dirpath=save_path, filename='{epoch}-{train_loss:.2f}', save_top_k=-1, monitor='train_loss', save_on_train_epoch_end=True)
-    wandb_logger = WandbLogger(log_model="all", entity="julian-q")
+    checkpoint_callback = ModelCheckpoint(dirpath=save_path,
+                                          filename='{epoch}-{train_loss:.2f}',
+                                          save_top_k=-1,
+                                          monitor='train_loss',
+                                          save_on_train_epoch_end=True,
+                                          save_last=True)
     
     swa_callback = pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2)
     sanity_check_script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
@@ -150,11 +176,12 @@ def train_melchior(state_dict:Union[None, str] = None,
         log_every_n_steps=1000,
         accumulate_grad_batches=args.accumulate_grad_batches,
         logger=wandb_logger,
+        strategy=strategy,
     )
 
-    wandb.finish()
-    wandb.init(project="melchior")
-    wandb.watch(model, log='all')
+    # wandb.finish()
+    # wandb.init(project="melchior")
+    # wandb.watch(model, log='all')
 
     # Train the model
     if state_dict:
@@ -167,24 +194,31 @@ def train_melchior(state_dict:Union[None, str] = None,
     return trainer.callback_metrics['train_loss'], trainer.callback_metrics['val_loss'], model.lr_schedulers().get_last_lr()
 
 if __name__ == '__main__':
-    if not os.path.isfile('README.md'):
-        print("Please run this script from the root directory of the project.")
-        exit(1)
+    try:
+        if not os.path.isfile('README.md'):
+            print("Please run this script from the root directory of the project.")
+            exit(1)
 
-    parser = argparse.ArgumentParser(description="Training utility for Melchior")
-    parser.add_argument("--model", type=str, default="melchior", choices=["melchior"]) # Add argument for model {rodan, melchior}
-    parser.add_argument("--state_dict", type=str, default=None)
-    parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--lr", type=float, default=6e-4)
-    parser.add_argument("--weight_decay", type=float, default=0.01)
-    parser.add_argument("--save_path", type=str, default="models/melchior")
-    parser.add_argument("--accumulate_grad_batches", type=int, default=1)
-    parser.add_argument("--num_gpus", type=int, default=None, help="Number of GPUs to use (default: all available GPUs)")
-    args = parser.parse_args()
+        parser = argparse.ArgumentParser(description="Training utility for Melchior")
+        parser.add_argument("--model", type=str, default="melchior", choices=["melchior"]) # Add argument for model {rodan, melchior}
+        parser.add_argument("--state_dict", type=str, default=None)
+        parser.add_argument("--epochs", type=int, default=20)
+        parser.add_argument("--batch_size", type=int, default=32)
+        parser.add_argument("--lr", type=float, default=6e-4)
+        parser.add_argument("--weight_decay", type=float, default=0.01)
+        parser.add_argument("--save_path", type=str, default="models/melchior")
+        parser.add_argument("--accumulate_grad_batches", type=int, default=1)
+        parser.add_argument("--num_gpus", type=int, default=None, help="Number of GPUs to use (default: all available GPUs)")
+        args = parser.parse_args()
 
-    if args.model == "melchior":
-        train_melchior(args.state_dict, args.epochs, args.batch_size, args.lr, args.weight_decay, "models/melchior", args.num_gpus)
-    else:
-        print("Invalid model specified.")
-        exit(1)
+        if args.model == "melchior":
+            train_melchior(args.state_dict, args.epochs, args.batch_size, args.lr, args.weight_decay, "models/melchior", args.num_gpus)
+        else:
+            print("Invalid model specified.")
+            exit(1)
+    except Exception as e:
+        print(f"Training failed: {str(e)}")
+        raise
+    finally:
+        if wandb.run is not None:
+            wandb.finish()
