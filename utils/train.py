@@ -166,6 +166,126 @@ def train_melchior(state_dict:Union[None, str] = None,
     print("Training complete.")
     return trainer.callback_metrics['train_loss'], trainer.callback_metrics['val_loss'], model.lr_schedulers().get_last_lr()
 
+
+
+
+
+
+def test_checkpointing_and_sanity_check(args):
+    """
+    Quick test function to verify checkpointing and sanity checks
+    """
+    print("Running quick test for checkpointing and sanity checks...")
+    
+    # Create small test dataset
+    data_train = MelchiorDataset("data/train_val/rna-train.hdf5")
+    data_valid = MelchiorDataset("data/train_val/rna-valid.hdf5")
+    
+    # Create small subsets
+    small_train = torch.utils.data.Subset(data_train, range(64))  # Just 64 samples
+    small_valid = torch.utils.data.Subset(data_valid, range(32))  # Just 32 samples
+    
+    train_loader = DataLoader(small_train, batch_size=args.batch_size, shuffle=True, num_workers=4)
+    val_loader = DataLoader(small_valid, batch_size=args.batch_size, shuffle=False, num_workers=4)
+
+    # Create model
+    model = MelchiorModule(
+        depth=4,
+        embed_dim=256,
+        lr=args.lr,
+        weight_decay=args.weight_decay,
+        train_loader=train_loader,
+        epochs=1,  # Just 1 epoch for testing
+        accumulate_grad_batches=args.accumulate_grad_batches
+    )
+
+    # Set up save path
+    test_save_path = os.path.join(args.save_path, "test_run")
+    os.makedirs(test_save_path, exist_ok=True)
+
+    # Initialize wandb
+    if wandb.run is not None:
+        wandb.finish()
+    
+    wandb.init(
+        project="melchior-test",
+        name="checkpoint-test",
+        config={
+            "test_mode": True,
+            "batch_size": args.batch_size,
+            "lr": args.lr
+        }
+    )
+    
+    # Create callbacks
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=test_save_path,
+        filename='{epoch}-{train_loss:.2f}',
+        save_top_k=-1,
+        monitor='train_loss',
+        save_on_train_epoch_end=True,
+        save_last=True
+    )
+    
+    sanity_check_script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
+    sanity_check_callback = SanityCheckCallback(sanity_check_script_path)
+    
+    # Create trainer with limited batches
+    trainer = pl.Trainer(
+        max_epochs=1,
+        limit_train_batches=2,  # Only run 2 training batches
+        limit_val_batches=2,    # Only run 2 validation batches
+        accelerator='gpu',
+        devices=2,              # Use single GPU for testing
+        strategy='ddp',
+        precision="bf16-mixed",
+        callbacks=[checkpoint_callback, sanity_check_callback],
+        logger=WandbLogger(log_model="all"),
+        enable_checkpointing=True
+    )
+
+    try:
+        # Train for limited batches
+        trainer.fit(model, train_loader, val_loader)
+        
+        # Verify checkpoint was saved
+        last_checkpoint = os.path.join(test_save_path, "last.ckpt")
+        if os.path.exists(last_checkpoint):
+            print("✓ Checkpoint saved successfully")
+            
+            # Try loading the checkpoint
+            loaded_model = MelchiorModule.load_from_checkpoint(
+                last_checkpoint,
+                train_loader=train_loader,
+                epochs=1,
+                accumulate_grad_batches=args.accumulate_grad_batches
+            )
+            print("✓ Checkpoint loaded successfully")
+        else:
+            print("✗ Checkpoint not saved!")
+            return False
+        
+        # Verify wandb logging
+        if wandb.run is not None and len(wandb.run.history) > 0:
+            print("✓ WandB logging working")
+        else:
+            print("✗ WandB logging not working properly")
+            
+        print("Quick test completed successfully!")
+        return True
+        
+    except Exception as e:
+        print(f"Test failed with error: {str(e)}")
+        return False
+    finally:
+        if wandb.run is not None:
+            wandb.finish()
+
+
+
+
+
+
 if __name__ == '__main__':
     if not os.path.isfile('README.md'):
         print("Please run this script from the root directory of the project.")
@@ -181,8 +301,17 @@ if __name__ == '__main__':
     parser.add_argument("--save_path", type=str, default="models/melchior")
     parser.add_argument("--accumulate_grad_batches", type=int, default=1)
     parser.add_argument("--num_gpus", type=int, default=None, help="Number of GPUs to use (default: all available GPUs)")
+    parser.add_argument("--test", action="store_true", help="Run quick test for checkpointing and sanity checks")
+
     args = parser.parse_args()
 
+    if args.test:
+        success = test_checkpointing_and_sanity_check(args)
+        if not success:
+            print("Quick test failed!")
+            exit(1)
+        print("Quick test passed!")
+        exit(0)
     if args.model == "melchior":
         train_melchior(args.state_dict, args.epochs, args.batch_size, args.lr, args.weight_decay, "models/melchior", args.num_gpus)
     else:
