@@ -35,8 +35,14 @@ class SanityCheckCallback(pl.Callback):
         self.script_path = script_path
         self.output_file = "eval/sanity_check_outputs/accuracy.txt"
 
-    def on_save_checkpoint(self, trainer, pl_module, checkpoint):        
-        self.run_sanity_check(pl_module)
+    # def on_save_checkpoint(self, trainer, pl_module, checkpoint):        
+    #     self.run_sanity_check(pl_module)
+    def after_save_checkpoint(self, trainer, pl_module, checkpoint_path):
+        """Called after the checkpoint has been saved to disk"""
+        if os.path.exists(checkpoint_path):
+            self.run_sanity_check(pl_module)
+        else:
+            print(f"Warning: checkpoint file {checkpoint_path} does not exist")
 
     def run_sanity_check(self, pl_module):
         if os.path.exists(self.script_path):
@@ -155,12 +161,15 @@ def train_melchior(state_dict:Union[None, str] = None,
         strategy = "auto"
     
     # Create trainer
-    checkpoint_callback = ModelCheckpoint(dirpath=save_path,
-                                          filename='{epoch}-{train_loss:.2f}',
-                                          save_top_k=-1,
-                                          monitor='train_loss',
-                                          save_on_train_epoch_end=True,
-                                          save_last=True)
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=save_path,
+        filename='{epoch}-{train_loss:.2f}',
+        save_top_k=-1,
+        monitor='train_loss',
+        save_on_train_epoch_end=True,
+        save_last=True,
+        every_n_epochs=1,
+    )
     
     swa_callback = pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2)
     sanity_check_script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
