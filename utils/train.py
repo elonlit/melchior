@@ -136,7 +136,7 @@ def train_melchior(state_dict:Union[None, str] = None,
         reinit=True
     )
 
-    wandb_logger = WandbLogger(log_model="all")
+    wandb_logger = WandbLogger(log_model="all", entity="julian-q")
 
     # Create data module
     data_train = MelchiorDataset("data/train_val/rna-train.hdf5")
