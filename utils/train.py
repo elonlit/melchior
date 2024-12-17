@@ -138,7 +138,7 @@ def train_melchior(state_dict:Union[None, str] = None,
     
     swa_callback = pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2)
     sanity_check_script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
-    sanity_check_callback = SanityCheckCallback(sanity_check_script_path)
+    sanity_check_callback = SanityCheckCallback(sanity_check_script_path) 
 
     trainer = pl.Trainer(
         profiler="simple",
