@@ -224,7 +224,7 @@ def test_checkpointing_and_sanity_check(args):
         save_top_k=-1,
         monitor='train_loss',
         save_on_train_epoch_end=True,
-        save_last=True
+        save_last=True,
     )
     
     sanity_check_script_path = os.path.join(os.getcwd(), "eval", "sanity_check.sh")
