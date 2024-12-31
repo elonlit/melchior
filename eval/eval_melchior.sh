@@ -20,27 +20,27 @@ cd ../..
 # Check if the output.fasta file already exists for each dataset
 if [ ! -f eval/melchior_outputs/arabidopsis-dataset/output.fasta ]; then
     echo "Basecalling Arabidopsis dataset..."
-    python -m eval.basecall data/test/arabidopsis-dataset -m melchior > eval/melchior_outputs/arabidopsis-dataset/output.fasta
+    python -m eval.basecall data/test/arabidopsis-dataset -m melchior -o eval/melchior_outputs/arabidopsis-dataset/times.txt > eval/melchior_outputs/arabidopsis-dataset/output.fasta
 fi
 
 if [ ! -f eval/melchior_outputs/human-dataset/output.fasta ]; then
     echo "Basecalling Human dataset..."
-    python -m eval.basecall data/test/human-dataset -m melchior > eval/melchior_outputs/human-dataset/output.fasta
+    python -m eval.basecall data/test/human-dataset -m melchior -o eval/melchior_outputs/human-dataset/times.txt > eval/melchior_outputs/human-dataset/output.fasta
 fi
 
 if [ ! -f eval/melchior_outputs/mouse-dataset/output.fasta ]; then
     echo "Basecalling Mouse dataset..."
-    python -m eval.basecall data/test/mouse-dataset -m melchior > eval/melchior_outputs/mouse-dataset/output.fasta
+    python -m eval.basecall data/test/mouse-dataset -m melchior -o eval/melchior_outputs/mouse-dataset/times.txt > eval/melchior_outputs/mouse-dataset/output.fasta
 fi
 
 if [ ! -f eval/melchior_outputs/poplar-dataset/output.fasta ]; then
     echo "Basecalling Poplar dataset..."
-    python -m eval.basecall data/test/poplar-dataset -m melchior > eval/melchior_outputs/poplar-dataset/output.fasta
+    python -m eval.basecall data/test/poplar-dataset -m melchior -o eval/melchior_outputs/poplar-dataset/times.txt > eval/melchior_outputs/poplar-dataset/output.fasta
 fi
 
 if [ ! -f eval/melchior_outputs/yeast-dataset/output.fasta ]; then
     echo "Basecalling Yeast dataset..."
-    python -m eval.basecall data/test/yeast-dataset -m melchior > eval/melchior_outputs/yeast-dataset/output.fasta
+    python -m eval.basecall data/test/yeast-dataset -m melchior -o eval/melchior_outputs/yeast-dataset/times.txt > eval/melchior_outputs/yeast-dataset/output.fasta
 fi
 
 echo "Basecalling process completed."
