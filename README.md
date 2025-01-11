@@ -90,11 +90,6 @@ eval/run_tests.sh
 >   -c: Download CPU version
 > ```
 > 
-> For Dorado:
-> ```
-> ./basecallers/download_dorado.sh
-> ```
-> 
 > Run these scripts before proceeding with the evaluation.
 
 ## Contributing
