@@ -4,7 +4,7 @@ A hybrid Mamba-Transformer model for RNA base calling
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
-[![arXiv](https://img.shields.io/badge/arXiv-2023.xxxxx-b31b1b.svg)](https://arxiv.org/abs/2023.xxxxx)
+[![arXiv](https://img.shields.io/badge/arXiv-2023.xxxxx-b31b1b.svg)](https://arxiv.org/abs/2025.xxxxx)
 
 ## Features
 
@@ -63,7 +63,7 @@ python -m utils.train --model melchior --epochs 10 --batch_size 32 --lr 0.002
 
 ## Reproducible Evaluation
 
-Weights for the 37.3 million parameter model are available on HuggingFace.
+Weights for the 134 million parameter model are available on HuggingFace.
 
 Download the test set fasta and fast5 files in ```./data/test/```:
 
@@ -110,10 +110,10 @@ Melchior is released under the [MIT License](LICENSE).
 If you use Melchior in your research, please cite:
 
 ```bibtex
-@article{melchior2024,
-  title={Melchior: A State Space Model for RNA Base Calling},
+@article{melchior2025,
+  title={Melchior: A Hybrid Mamba-Transformer RNA Basecaller},
   author={Litman, Elon},
-  journal={arXiv preprint arXiv:2023.xxxxx},
-  year={2024}
+  journal={arXiv preprint arXiv:2025.xxxxx},
+  year={2025}
 }
 ```
