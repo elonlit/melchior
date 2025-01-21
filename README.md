@@ -4,7 +4,7 @@ A hybrid Mamba-Transformer model for RNA base calling
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
-[![bioRxiv](https://img.shields.io/badge/arXiv-2025.01.11.632456-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2025.01.11.632456v1)
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-2025.01.11.632456-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2025.01.11.632456v1)
 
 ## Features
 
