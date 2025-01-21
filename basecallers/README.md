@@ -2,7 +2,7 @@
 
 This directory contains various models for basecalling ONT sequencing data.
 
-## 📁 Directory Structure
+## Directory Structure
 ```
 basecallers/
 ├── README.md           # Documentation file
@@ -16,7 +16,7 @@ basecallers/
     └── rna.torch           # RODAN model weights
 ```
 
-## 📥 Installation
+## Installation
 Each basecaller has its own download script for easy installation:
 ```bash
 # Download all basecallers
