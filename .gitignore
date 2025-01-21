@@ -13,4 +13,5 @@ models/
 wandb/
 basecallers/*
 !basecallers/*.sh
+!basecallers/*.md
 eval/*_outputs/
