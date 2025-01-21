@@ -29,12 +29,13 @@ Each basecaller has its own download script for easy installation:
 ```
 
 > [!IMPORTANT]  
-> The download script for Guppy will, by default, download the GPU version. To change this, note the following options:
+> The download script for Guppy will, by default, download the GPU version.
 > ```
 > ./basecallers/download_guppy.sh [-g|-c]
 >   -g: Download GPU version
 >   -c: Download CPU version
 > ```
+> To change this, adjust the command options.
 
 ---
 *Note: Make sure you have sufficient storage space and required dependencies before downloading the models.*
