@@ -5,15 +5,15 @@ This directory contains various models for basecalling ONT sequencing data.
 ## 📁 Directory Structure
 ```
 basecallers/
-├── BASECALLERS.md           # Documentation file
+├── README.md           # Documentation file
 ├── download_basecallers.sh  # Master script for downloading all basecallers
 ├── download_gcrtcall.sh     # Script for GCRTcall download
 ├── download_guppy.sh        # Script for Guppy download
 ├── download_melchior.sh     # Script for Melchior download
 ├── GCRTcall/               # GCRTcall model directory
 │   └── GCRTcall_ckpt.pt    # GCRTcall model weights
-└── rodan/                  # Rodan model directory
-    └── rna.torch           # RNA model weights
+└── rodan/                  # RODAN model directory
+    └── rna.torch           # RODAN model weights
 ```
 
 ## 📥 Installation
@@ -27,6 +27,14 @@ Each basecaller has its own download script for easy installation:
 ./download_melchior.sh
 ./download_guppy.sh
 ```
+
+> [!IMPORTANT]  
+> The download script for Guppy will, by default, download the GPU version. To change this, note the following options:
+> ```
+> ./basecallers/download_guppy.sh [-g|-c]
+>   -g: Download GPU version
+>   -c: Download CPU version
+> ```
 
 ---
 *Note: Make sure you have sufficient storage space and required dependencies before downloading the models.*
