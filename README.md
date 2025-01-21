@@ -4,7 +4,7 @@ A hybrid Mamba-Transformer model for RNA base calling
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
-[![arXiv](https://img.shields.io/badge/arXiv-2023.xxxxx-b31b1b.svg)](https://arxiv.org/abs/2025.xxxxx)
+[![bioRxiv](https://img.shields.io/badge/arXiv-2025.01.11.632456-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2025.01.11.632456v1)
 
 ## Features
 
@@ -108,7 +108,7 @@ If you use Melchior in your research, please cite:
 @article{melchior2025,
   title={Melchior: A Hybrid Mamba-Transformer RNA Basecaller},
   author={Litman, Elon},
-  journal={arXiv preprint arXiv:2025.xxxxx},
+  journal={bioRxiv preprint bioRxiv:2025.01.11.632456},
   year={2025}
 }
 ```
